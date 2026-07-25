@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentation - AuthGuard API</title>
+    <meta name="description" content="AuthGuard API Documentation - Complete reference for the authentication API.">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+    <link rel="stylesheet" href="css/docs.css">
+</head>
+<body>
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo" aria-label="AuthGuard Home">
+                <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
+                <span>AuthGuard</span>
+            </a>
+            <div class="nav-links" role="menubar">
+                <a href="index.html#features" role="menuitem">Features</a>
+                <a href="index.html#pricing" role="menuitem">Pricing</a>
+                <a href="#getting-started" role="menuitem">Docs</a>
+            </div>
+            <div class="nav-actions">
+                <a href="login.html" class="btn btn-ghost btn-sm">Sign In</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+                <button class="nav-mobile-toggle" aria-label="Toggle menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="docs-layout">
+        <aside class="docs-sidebar">
+            <div class="docs-sidebar-title">Getting Started</div>
+            <a href="#getting-started" class="docs-nav-item active">Introduction</a>
+            <a href="#authentication" class="docs-nav-item">Authentication</a>
+            <a href="#errors" class="docs-nav-item">Error Handling</a>
+
+            <div class="docs-sidebar-title" style="margin-top:var(--space-6);">Endpoints</div>
+            <a href="#post-register" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Register</a>
+            <a href="#post-login" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Login</a>
+            <a href="#post-google" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Google Auth</a>
+            <a href="#post-refresh" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Refresh Token</a>
+            <a href="#get-me" class="docs-nav-item"><span class="docs-nav-method get">GET</span>Get User</a>
+            <a href="#post-logout" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Logout</a>
+            <a href="#post-check-username" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Check Username</a>
+            <a href="#post-check-email" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Check Email</a>
+            <a href="#post-verify" class="docs-nav-item"><span class="docs-nav-method post">POST</span>Verify Session</a>
+        </aside>
+
+        <main class="docs-content">
+            <section class="docs-section" id="getting-started">
+                <h2>Introduction</h2>
+                <p>AuthGuard provides a simple, secure REST API for authentication. All endpoints return structured JSON responses.</p>
+                <h3>Base URL</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-path">http://localhost:5000/api/auth</span>
+                </div>
+                <p>Replace <code>http://localhost:5000</code> with your production backend URL.</p>
+                <h3>Content Type</h3>
+                <p>All requests must include <code>Content-Type: application/json</code>. All responses are in JSON format.</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>Example Request Headers</span>
+                        <button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button>
+                    </div>
+                    <pre><code>Content-Type: application/json
+Authorization: Bearer <access_token></code></pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="authentication">
+                <h2>Authentication</h2>
+                <p>Most endpoints require authentication via an access token in the <code>Authorization</code> header.</p>
+                <h3>Access Token</h3>
+                <p>Received after successful login or registration. Valid for 15 minutes.</p>
+                <h3>Refresh Token</h3>
+                <p>Stored in an HttpOnly cookie. Automatically rotates on each refresh request.</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>Token Refresh Flow</span>
+                        <button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button>
+                    </div>
+                    <pre><code>// When access token expires (HTTP 401)
+// Automatically call refresh endpoint
+POST /api/auth/refresh
+// Cookie: refresh_token=... (sent automatically)
+
+{
+    "success": true,
+    "accessToken": "new_access_token...",
+    "refreshToken": "new_refresh_token..."
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="errors">
+                <h2>Error Handling</h2>
+                <p>All errors follow a consistent format:</p>
+                <div class="code-block">
+                    <div class="code-block-header">
+                        <span>Error Response Format</span>
+                        <button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button>
+                    </div>
+                    <pre><code>{
+    "success": false,
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message."
+}</code></pre>
+                </div>
+
+                <table class="docs-table">
+                    <thead>
+                        <tr><th>HTTP Status</th><th>Code</th><th>Description</th></tr>
+                    </thead>
+                    <tbody>
+                        <tr><td>400</td><td>VALIDATION_ERROR</td><td>Invalid input data</td></tr>
+                        <tr><td>400</td><td>USERNAME_EXISTS</td><td>Username already taken</td></tr>
+                        <tr><td>400</td><td>EMAIL_EXISTS</td><td>Email already registered</td></tr>
+                        <tr><td>401</td><td>INVALID_CREDENTIALS</td><td>Wrong username/password</td></tr>
+                        <tr><td>401</td><td>TOKEN_EXPIRED_OR_INVALID</td><td>Access token expired/invalid</td></tr>
+                        <tr><td>401</td><td>SESSION_EXPIRED</td><td>Refresh token expired/revoked</td></tr>
+                        <tr><td>429</td><td>TOO_MANY_REQUESTS</td><td>Rate limit exceeded</td></tr>
+                        <tr><td>500</td><td>INTERNAL_SERVER_ERROR</td><td>Server error</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="docs-section" id="post-register">
+                <h3>Register</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/register</span>
+                    <span class="docs-endpoint-desc">Create a new user account</span>
+                </div>
+                <h4>Request Body</h4>
+                <table class="docs-table">
+                    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>username</td><td>string</td><td><span class="required">Yes</span></td><td>3-20 chars, letters, numbers, underscores</td></tr>
+                        <tr><td>email</td><td>string</td><td><span class="required">Yes</span></td><td>Gmail address only</td></tr>
+                        <tr><td>password</td><td>string</td><td><span class="required">Yes</span></td><td>At least 8 characters</td></tr>
+                    </tbody>
+                </table>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Example Request</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>POST /api/auth/register
+Content-Type: application/json
+
+{
+    "username": "john_doe",
+    "email": "john@gmail.com",
+    "password": "securePassword123"
+}</code></pre>
+                </div>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Example Response (201)</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>{
+    "success": true,
+    "accessToken": "eyJhbGciOiJIUzI1NiIs...",
+    "refreshToken": "a1b2c3d4e5f6...",
+    "user": {
+        "id": "uuid-1234",
+        "username": "john_doe",
+        "email": "john@gmail.com",
+        "display_name": null,
+        "avatar_url": null,
+        "created_at": "2025-01-01T00:00:00"
+    }
+}</code></pre>
+                </div>
+                <h4>JavaScript Example</h4>
+                <div class="code-block">
+                    <div class="code-block-header"><span>JavaScript</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>async function register(username, email, password) {
+    const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, email, password })
+    });
+    return response.json();
+}</code></pre>
+                </div>
+            </section>
+
+            <section class="docs-section" id="post-login">
+                <h3>Login</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/login</span>
+                    <span class="docs-endpoint-desc">Sign in with username/email and password</span>
+                </div>
+                <table class="docs-table">
+                    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>usernameOrEmail</td><td>string</td><td><span class="required">Yes</span></td><td>Username or Gmail address</td></tr>
+                        <tr><td>password</td><td>string</td><td><span class="required">Yes</span></td><td>Account password</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="docs-section" id="post-google">
+                <h3>Google Authentication</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/google</span>
+                    <span class="docs-endpoint-desc">Sign in or register with Google OAuth</span>
+                </div>
+                <table class="docs-table">
+                    <thead><tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>idToken</td><td>string</td><td><span class="required">Yes</span></td><td>Google OAuth ID token</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <section class="docs-section" id="post-refresh">
+                <h3>Refresh Token</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/refresh</span>
+                    <span class="docs-endpoint-desc">Get a new access token using the refresh cookie</span>
+                </div>
+                <p>Reads the <code>refresh_token</code> cookie automatically. Returns a new access token and rotates the refresh token.</p>
+            </section>
+
+            <section class="docs-section" id="get-me">
+                <h3>Get Current User</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge get">GET</span>
+                    <span class="docs-endpoint-path">/api/auth/me</span>
+                    <span class="docs-endpoint-desc">Get authenticated user profile</span>
+                </div>
+                <p>Requires <code>Authorization: Bearer <access_token></code> header.</p>
+            </section>
+
+            <section class="docs-section" id="post-logout">
+                <h3>Logout</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/logout</span>
+                    <span class="docs-endpoint-desc">Sign out and revoke current session</span>
+                </div>
+                <p>Revokes the refresh token. The <code>refresh_token</code> cookie will be cleared.</p>
+            </section>
+
+            <section class="docs-section" id="post-check-username">
+                <h3>Check Username Availability</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/check-username</span>
+                    <span class="docs-endpoint-desc">Check if a username is available</span>
+                </div>
+            </section>
+
+            <section class="docs-section" id="post-check-email">
+                <h3>Check Email Availability</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/check-email</span>
+                    <span class="docs-endpoint-desc">Check if an email is already registered</span>
+                </div>
+            </section>
+
+            <section class="docs-section" id="post-verify">
+                <h3>Verify Session</h3>
+                <div class="docs-endpoint">
+                    <span class="docs-endpoint-badge post">POST</span>
+                    <span class="docs-endpoint-path">/api/auth/verify</span>
+                    <span class="docs-endpoint-desc">Verify if a session is still valid</span>
+                </div>
+                <p>You can send the refresh token in the request body or rely on the HttpOnly cookie.</p>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Example Response (200)</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>{
+    "success": true,
+    "valid": true,
+    "expiresAt": "2025-01-08T00:00:00",
+    "user": {
+        "id": "uuid-1234",
+        "username": "john_doe",
+        "email": "john@gmail.com",
+        "display_name": null,
+        "avatar_url": null,
+        "created_at": "2025-01-01T00:00:00"
+    }
+}</code></pre>
+                </div>
+            </section>
+
+            <!-- ========== KIẾN THỨC & HƯỚNG DẪN TỪ LOGICAPP.MD ========== -->
+
+            <!-- Security Architecture -->
+            <section class="docs-section" id="security-architecture">
+                <h2>Security Architecture</h2>
+                <p>AuthGuard implements multiple layers of security to protect user accounts and data.</p>
+
+                <h3>Password Security</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Feature</th><th>Detail</th></tr></thead>
+                    <tbody>
+                        <tr><td>Hash Algorithm</td><td>bcrypt with 12 salt rounds (2^12 = 4096 iterations)</td></tr>
+                        <tr><td>Hash Length</td><td>60 characters (format: $2b$12$...)</td></tr>
+                        <tr><td>Comparison</td><td>bcrypt.checkpw() — constant-time comparison prevents timing attacks</td></tr>
+                        <tr><td>Storage</td><td>Only the hash is stored; plaintext password is never persisted</td></tr>
+                        <tr><td>Nullable</td><td>Users who register via Google OAuth have no password_hash</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Cookie Security</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Attribute</th><th>Value</th><th>Purpose</th></tr></thead>
+                    <tbody>
+                        <tr><td>HttpOnly</td><td>true</td><td>Prevents XSS — JavaScript cannot read the cookie</td></tr>
+                        <tr><td>Secure</td><td>true (HTTPS)</td><td>Only sent over encrypted connections</td></tr>
+                        <tr><td>SameSite</td><td>Strict</td><td>Prevents CSRF attacks</td></tr>
+                        <tr><td>Max-Age</td><td>604800 (7 days)</td><td>Automatically expires</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Rate Limiting & Brute Force Protection</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Endpoint Type</th><th>Max Attempts</th><th>Window</th><th>Behavior When Exceeded</th></tr></thead>
+                    <tbody>
+                        <tr><td>Auth endpoints</td><td>5</td><td>15 minutes</td><td>429 TOO_MANY_REQUESTS</td></tr>
+                        <tr><td>Global</td><td>100</td><td>15 minutes</td><td>429 TOO_MANY_REQUESTS</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Account Enumeration Protection</h3>
+                <p>To prevent attackers from guessing valid usernames or emails, the login endpoint always returns the same error regardless of whether the account exists:</p>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Always returns</span></div>
+                    <pre><code>{
+    "success": false,
+    "code": "INVALID_CREDENTIALS",
+    "message": "Invalid username/email or password."
+}</code></pre>
+                </div>
+
+                <h3>Audit Logging</h3>
+                <p>All authentication events are logged, including both SUCCESS and FAILED attempts. Sensitive information is sanitized before storage:</p>
+                <ul style="margin-left:var(--space-5);line-height:2;">
+                    <li>password — removed from details</li>
+                    <li>token — removed from details</li>
+                    <li>idToken (Google credential) — removed from details</li>
+                </ul>
+
+                <h3>Token Rotation & Replay Attack Protection</h3>
+                <p>Each time a refresh token is used, the old token is revoked and a new one is issued. If an old (revoked) token is replayed, <strong>all sessions for that user are immediately revoked</strong>, preventing attackers from maintaining access.</p>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Replay Attack Detection Flow</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>1. User logs in → receives AT1, RT1
+2. User refreshes token → RT1 revoked, AT2 + RT2 issued
+3. Attacker replays RT1 → Backend detects revoked token
+4. ALL sessions for this user are revoked
+5. Attacker's RT2 also becomes invalid
+6. User must log in again (sacrifice for security)</code></pre>
+                </div>
+            </section>
+
+            <!-- Token System Deep Dive -->
+            <section class="docs-section" id="token-system">
+                <h2>Token System Deep Dive</h2>
+
+                <h3>Access Token (JWT)</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+                    <tbody>
+                        <tr><td>Algorithm</td><td>HS256 (HMAC-SHA256)</td></tr>
+                        <tr><td>Expiry</td><td>15 minutes (configurable via JWT_ACCESS_EXPIRES_IN_MINUTES)</td></tr>
+                        <tr><td>Payload</td><td>userId, username, email, exp (no sensitive data)</td></tr>
+                    </tbody>
+                </table>
+                <div class="code-block">
+                    <div class="code-block-header"><span>JWT Payload Structure</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>{
+    "userId": "uuid-1234",
+    "username": "john_doe",
+    "email": "john@gmail.com",
+    "exp": 1700000000   // Unix timestamp, 15 min from creation
+}</code></pre>
+                </div>
+
+                <h3>Refresh Token (Session Token)</h3>
+                <p>Unlike the access token, the refresh token is not a JWT. It is a cryptographically random string (80 hex characters) that is stored in the database and linked to a specific session.</p>
+                <table class="docs-table">
+                    <thead><tr><th>Property</th><th>Value</th></tr></thead>
+                    <tbody>
+                        <tr><td>Generation</td><td>secrets.token_hex(40) — 80 hex chars</td></tr>
+                        <tr><td>Storage</td><td>sessions table (database) + HttpOnly Cookie</td></tr>
+                        <tr><td>Expiry</td><td>7 days (configurable via JWT_REFRESH_EXPIRES_IN_DAYS)</td></tr>
+                        <tr><td>Transmission</td><td>HttpOnly Cookie (preferred) or POST body</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Integration Guide -->
+            <section class="docs-section" id="integration-guide">
+                <h2>Integration Guide</h2>
+                <p>AuthGuard is an independent <strong>Authentication Platform</strong>. Your backend (Flask, Node.js, Django, React, etc.) only needs to verify the JWT Access Token issued by AuthGuard.</p>
+
+                <h3>Integration Options</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Method</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>Shared JWT Secret</td><td>Copy JWT_ACCESS_SECRET to your backend and verify tokens locally</td></tr>
+                        <tr><td>Verify API</td><td>Call POST /api/auth/verify to validate tokens remotely</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Flask Integration</h3>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Flask Middleware</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>import jwt
+from functools import wraps
+from flask import request, jsonify, g
+
+JWT_ACCESS_SECRET = "access-token-secret-key-12345"  # Copy from AuthGuard
+
+def require_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_header = request.headers.get("Authorization")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            return jsonify({"error": "Unauthorized"}), 401
+
+        token = auth_header.split(" ")[1]
+        try:
+            payload = jwt.decode(token, JWT_ACCESS_SECRET, algorithms=["HS256"])
+            g.current_user = payload  # { userId, username, email }
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+
+        return f(*args, **kwargs)
+    return decorated</code></pre>
+                </div>
+
+                <h3>Node.js (Express) Integration</h3>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Express Middleware</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>const jwt = require('jsonwebtoken');
+const JWT_ACCESS_SECRET = 'access-token-secret-key-12345';
+
+function requireAuth(req, res, next) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const token = authHeader.split(' ')[1];
+    try {
+        const payload = jwt.verify(token, JWT_ACCESS_SECRET);
+        req.user = payload; // { userId, username, email }
+        next();
+    } catch (err) {
+        if (err.name === 'TokenExpiredError') {
+            return res.status(401).json({ error: 'Token expired' });
+        }
+        return res.status(401).json({ error: 'Invalid token' });
+    }
+}
+
+app.get('/api/protected', requireAuth, (req, res) => {
+    res.json({ message: 'Access granted', userId: req.user.userId });
+});</code></pre>
+                </div>
+
+                <h3>Django Integration</h3>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Django Decorator</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>import jwt
+from django.http import JsonResponse
+from functools import wraps
+
+JWT_ACCESS_SECRET = 'access-token-secret-key-12345'
+
+def jwt_required(view_func):
+    @wraps(view_func)
+    def _wrapped_view(request, *args, **kwargs):
+        auth_header = request.headers.get('Authorization', '')
+        if not auth_header.startswith('Bearer '):
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+        token = auth_header.split(' ')[1]
+        try:
+            payload = jwt.decode(token, JWT_ACCESS_SECRET, algorithms=['HS256'])
+            request.user_id = payload['userId']
+        except jwt.ExpiredSignatureError:
+            return JsonResponse({'error': 'Token expired'}, status=401)
+        except jwt.InvalidTokenError:
+            return JsonResponse({'error': 'Invalid token'}, status=401)
+
+        return view_func(request, *args, **kwargs)
+    return _wrapped_view</code></pre>
+                </div>
+
+                <h3>React (Frontend) Integration</h3>
+                <div class="code-block">
+                    <div class="code-block-header"><span>React API Client</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>const API_BASE_URL = 'http://localhost:5000'; // AuthGuard URL
+
+class AuthGuardClient {
+    constructor() {
+        this.accessToken = null;
+    }
+
+    async login(usernameOrEmail, password) {
+        const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ usernameOrEmail, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            this.accessToken = data.accessToken;
+            localStorage.setItem('authguard_token', data.accessToken);
+        }
+        return data;
+    }
+
+    async callResourceServer(url, options = {}) {
+        const headers = {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.accessToken}`,
+            ...options.headers
+        };
+        const res = await fetch(url, { ...options, headers });
+        if (res.status === 401) {
+            const refreshed = await this.refreshToken();
+            if (refreshed) {
+                headers['Authorization'] = `Bearer ${this.accessToken}`;
+                const retryRes = await fetch(url, { ...options, headers });
+                return retryRes.json();
+            }
+        }
+        return res.json();
+    }
+
+    async refreshToken() {
+        const res = await fetch(`${API_BASE_URL}/api/auth/refresh`, {
+            method: 'POST',
+            credentials: 'include'
+        });
+        const data = await res.json();
+        if (data.success) {
+            this.accessToken = data.accessToken;
+            localStorage.setItem('authguard_token', data.accessToken);
+            return true;
+        }
+        return false;
+    }
+}</code></pre>
+                </div>
+
+                <h3>Next.js (API Routes) Integration</h3>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Next.js API Route</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>// pages/api/protected.js
+import jwt from 'jsonwebtoken';
+
+const JWT_ACCESS_SECRET = 'access-token-secret-key-12345';
+
+export default function handler(req, res) {
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    try {
+        const payload = jwt.verify(authHeader.split(' ')[1], JWT_ACCESS_SECRET);
+        res.status(200).json({
+            message: 'Protected data',
+            user: payload
+        });
+    } catch (err) {
+        res.status(401).json({ error: 'Invalid or expired token' });
+    }
+}</code></pre>
+                </div>
+
+                <h3>Using the Verify API (No Shared Secret)</h3>
+                <p>If you prefer not to share the JWT secret, your resource server can call the AuthGuard Verify API to validate tokens remotely:</p>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Python Example</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>import requests
+
+def verify_token(access_token):
+    response = requests.post(
+        'http://authguard-server:5000/api/auth/verify',
+        headers={'Authorization': f'Bearer {access_token}'}
+    )
+    if response.status_code == 200:
+        data = response.json()
+        return data['user']  # { id, username, email, ... }
+    return None</code></pre>
+                </div>
+            </section>
+
+            <!-- Database Schema -->
+            <section class="docs-section" id="database-schema">
+                <h2>Database Schema</h2>
+                <p>AuthGuard uses three core tables to manage authentication data.</p>
+
+                <h3>users</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>VARCHAR(36)</td><td>PK</td><td>UUID</td></tr>
+                        <tr><td>username</td><td>VARCHAR(80)</td><td>UNIQUE, NOT NULL, INDEX</td><td>Case-insensitive when queried</td></tr>
+                        <tr><td>email</td><td>VARCHAR(120)</td><td>UNIQUE, NOT NULL, INDEX</td><td>Lowercase, trimmed, @gmail.com only</td></tr>
+                        <tr><td>password_hash</td><td>VARCHAR(255)</td><td>NULLABLE</td><td>bcrypt hash (NULL for Google-only users)</td></tr>
+                        <tr><td>google_sub</td><td>VARCHAR(255)</td><td>UNIQUE, NULLABLE</td><td>Google Subject ID</td></tr>
+                        <tr><td>avatar_url</td><td>VARCHAR(255)</td><td>NULLABLE</td><td>Profile picture URL</td></tr>
+                        <tr><td>display_name</td><td>VARCHAR(100)</td><td>NULLABLE</td><td>Display name</td></tr>
+                        <tr><td>package</td><td>VARCHAR(50)</td><td>NOT NULL, DEFAULT 'free'</td><td>free / pro / enterprise</td></tr>
+                        <tr><td>package_activated_at</td><td>DATETIME</td><td>NULLABLE</td><td>When package was activated</td></tr>
+                        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>Account creation timestamp</td></tr>
+                        <tr><td>updated_at</td><td>DATETIME</td><td>ON UPDATE NOW</td><td>Last update timestamp</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>sessions</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>VARCHAR(36)</td><td>PK</td><td>UUID</td></tr>
+                        <tr><td>user_id</td><td>VARCHAR(36)</td><td>FK → users.id, INDEX</td><td>ON DELETE CASCADE</td></tr>
+                        <tr><td>token</td><td>VARCHAR(255)</td><td>UNIQUE, NOT NULL, INDEX</td><td>80 hex chars (secrets.token_hex(40))</td></tr>
+                        <tr><td>expires_at</td><td>DATETIME</td><td>NOT NULL</td><td>7 days from creation</td></tr>
+                        <tr><td>user_agent</td><td>VARCHAR(255)</td><td>NULLABLE</td><td>Browser user agent</td></tr>
+                        <tr><td>ip_address</td><td>VARCHAR(45)</td><td>NULLABLE</td><td>Client IP address</td></tr>
+                        <tr><td>revoked</td><td>BOOLEAN</td><td>NOT NULL, DEFAULT FALSE</td><td>Whether session is revoked</td></tr>
+                        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>Session creation timestamp</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>audit_logs</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Column</th><th>Type</th><th>Constraints</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>id</td><td>VARCHAR(36)</td><td>PK</td><td>UUID</td></tr>
+                        <tr><td>user_id</td><td>VARCHAR(36)</td><td>FK → users.id, INDEX, NULLABLE</td><td>NULL if not authenticated</td></tr>
+                        <tr><td>event</td><td>VARCHAR(100)</td><td>NOT NULL</td><td>Event name (REGISTER, LOGIN, etc.)</td></tr>
+                        <tr><td>status</td><td>VARCHAR(20)</td><td>NOT NULL</td><td>SUCCESS or FAILED</td></tr>
+                        <tr><td>user_agent</td><td>VARCHAR(255)</td><td>NULLABLE</td><td>Browser user agent</td></tr>
+                        <tr><td>ip_address</td><td>VARCHAR(45)</td><td>NULLABLE</td><td>Client IP address</td></tr>
+                        <tr><td>details</td><td>TEXT</td><td>NULLABLE</td><td>JSON string (sanitized)</td></tr>
+                        <tr><td>created_at</td><td>DATETIME</td><td>DEFAULT NOW</td><td>Log entry timestamp</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Audit Events</h3>
+                <table class="docs-table">
+                    <thead><tr><th>Event</th><th>When</th><th>Notes</th></tr></thead>
+                    <tbody>
+                        <tr><td>REGISTER</td><td>New account registration</td><td>Logs both SUCCESS and FAILED</td></tr>
+                        <tr><td>LOGIN</td><td>Username/password login</td><td>Logs both SUCCESS and FAILED</td></tr>
+                        <tr><td>GOOGLE_REGISTER</td><td>New user via Google</td><td>SUCCESS only</td></tr>
+                        <tr><td>GOOGLE_LOGIN</td><td>Existing user via Google</td><td>SUCCESS only</td></tr>
+                        <tr><td>GOOGLE_AUTH</td><td>Google auth failure</td><td>FAILED only</td></tr>
+                        <tr><td>LOGOUT</td><td>User logs out</td><td>SUCCESS only</td></tr>
+                        <tr><td>LOGOUT_ALL_DEVICES</td><td>Logout from all devices</td><td>SUCCESS only</td></tr>
+                        <tr><td>LINK_GOOGLE</td><td>Link Google account</td><td>Logs both SUCCESS and FAILED</td></tr>
+                        <tr><td>UNLINK_GOOGLE</td><td>Unlink Google account</td><td>Logs both SUCCESS and FAILED</td></tr>
+                        <tr><td>UPDATE_PROFILE</td><td>Profile update</td><td>Logs both SUCCESS and FAILED</td></tr>
+                        <tr><td>CHANGE_PASSWORD</td><td>Password change</td><td>Logs both SUCCESS and FAILED</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Complete Error Codes -->
+            <section class="docs-section" id="error-codes">
+                <h2>Complete Error Codes</h2>
+                <table class="docs-table">
+                    <thead><tr><th>HTTP Status</th><th>Code</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>400</td><td>VALIDATION_ERROR</td><td>Invalid input data</td></tr>
+                        <tr><td>400</td><td>USERNAME_EXISTS</td><td>Username already taken</td></tr>
+                        <tr><td>400</td><td>EMAIL_EXISTS</td><td>Email already registered</td></tr>
+                        <tr><td>400</td><td>EMAIL_ALREADY_LINKED</td><td>Google already linked to another user</td></tr>
+                        <tr><td>400</td><td>GOOGLE_AUTH_FAILED</td><td>Google authentication failed</td></tr>
+                        <tr><td>400</td><td>LINK_GOOGLE_FAILED</td><td>Google link failed</td></tr>
+                        <tr><td>400</td><td>UNLINK_GOOGLE_FAILED</td><td>Google unlink failed</td></tr>
+                        <tr><td>400</td><td>UPDATE_FAILED</td><td>Profile update failed</td></tr>
+                        <tr><td>400</td><td>REGISTRATION_FAILED</td><td>Registration failed</td></tr>
+                        <tr><td>401</td><td>INVALID_CREDENTIALS</td><td>Wrong username/email/password</td></tr>
+                        <tr><td>401</td><td>UNAUTHORIZED</td><td>Missing Authorization header</td></tr>
+                        <tr><td>401</td><td>TOKEN_EXPIRED_OR_INVALID</td><td>Access token expired or invalid</td></tr>
+                        <tr><td>401</td><td>SESSION_EXPIRED</td><td>Refresh token expired or revoked</td></tr>
+                        <tr><td>401</td><td>WRONG_PASSWORD</td><td>Current password is incorrect</td></tr>
+                        <tr><td>404</td><td>USER_NOT_FOUND</td><td>User not found</td></tr>
+                        <tr><td>429</td><td>TOO_MANY_REQUESTS</td><td>Rate limit exceeded</td></tr>
+                        <tr><td>500</td><td>INTERNAL_SERVER_ERROR</td><td>Server internal error</td></tr>
+                        <tr><td>500</td><td>LOGIN_FAILED</td><td>Login failed (server error)</td></tr>
+                        <tr><td>500</td><td>LOGOUT_FAILED</td><td>Logout failed</td></tr>
+                        <tr><td>500</td><td>CHANGE_PASSWORD_FAILED</td><td>Password change failed</td></tr>
+                    </tbody>
+                </table>
+            </section>
+
+            <!-- Testing Guide -->
+            <section class="docs-section" id="testing-guide">
+                <h2>Testing Guide</h2>
+
+                <h3>Running Unit Tests</h3>
+                <p>AuthGuard includes 6 integration tests covering all authentication flows:</p>
+                <div class="code-block">
+                    <div class="code-block-header"><span>Run all tests</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code>python test_auth.py</code></pre>
+                </div>
+
+                <table class="docs-table">
+                    <thead><tr><th>#</th><th>Test Case</th><th>Description</th></tr></thead>
+                    <tbody>
+                        <tr><td>1</td><td>test_registration_flow</td><td>Validates input, successful registration</td></tr>
+                        <tr><td>2</td><td>test_login_flow</td><td>Login by username, email, wrong password</td></tr>
+                        <tr><td>3</td><td>test_google_auth_flow</td><td>Google login, account linking</td></tr>
+                        <tr><td>4</td><td>test_token_rotation_and_replay</td><td>Refresh token, replay attack protection</td></tr>
+                        <tr><td>5</td><td>test_uniqueness_constraints</td><td>Duplicate username/email prevention</td></tr>
+                        <tr><td>6</td><td>test_rate_limiter</td><td>Brute force protection</td></tr>
+                    </tbody>
+                </table>
+
+                <h3>Testing with cURL</h3>
+                <div class="code-block">
+                    <div class="code-block-header"><span>cURL Examples</span><button onclick="copyCode(this)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy</button></div>
+                    <pre><code># Register
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"username":"testuser","email":"test@gmail.com","password":"password123"}'
+
+# Login
+curl -X POST http://localhost:5000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"usernameOrEmail":"testuser","password":"password123"}'
+
+# Get user info (replace token)
+curl -X GET http://localhost:5000/api/auth/me \
+  -H "Authorization: Bearer <access_token>"
+
+# Refresh token
+curl -X POST http://localhost:5000/api/auth/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"<refresh_token>"}'
+
+# Health check
+curl http://localhost:5000/health</code></pre>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/nav.js"></script>
+    <script>
+        function copyCode(btn) {
+            const pre = btn.closest('.code-block').querySelector('pre code');
+            const text = pre.textContent || pre.innerText;
+            navigator.clipboard.writeText(text).then(() => {
+                btn.innerHTML = 'Copied!';
+                setTimeout(() => {
+                    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copy';
+                }, 2000);
+            });
+        }
+
+        document.querySelectorAll('.docs-nav-item').forEach(item => {
+            item.addEventListener('click', (e) => {
+                e.preventDefault();
+                const target = document.querySelector(item.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+                document.querySelectorAll('.docs-nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        const sections = document.querySelectorAll('.docs-section');
+        const navItems = document.querySelectorAll('.docs-nav-item');
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const top = section.offsetTop - 100;
+                if (window.scrollY >= top) {
+                    current = section.getAttribute('id');
+                }
+            });
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === '#' + current) {
+                    item.classList.add('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html>

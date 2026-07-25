@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - AuthGuard</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .proof-image { max-width: 300px; max-height: 200px; border-radius: 6px; cursor: pointer; border: 1px solid var(--color-border); }
+        .proof-image:hover { opacity: 0.8; }
+        .request-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: var(--space-4); margin-bottom: var(--space-4); }
+        .request-card .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+        .request-card .user-info { display: flex; flex-direction: column; gap: 2px; }
+        .request-card .user-info .name { font-weight: 600; }
+        .request-card .user-info .email { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+        .request-card .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+        .request-card .meta { display: flex; gap: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-approved { background: #d1fae5; color: #065f46; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+        .fullscreen-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; cursor: pointer; }
+        .fullscreen-overlay.active { display: flex; }
+        .fullscreen-overlay img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+        .admin-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-4); margin-bottom: var(--space-6); }
+        .admin-stat-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: var(--space-4); }
+        .admin-stat-card .value { font-size: 2rem; font-weight: 700; color: var(--color-primary); }
+        .admin-stat-card .label { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">
+                <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
+                <span>AuthGuard Admin</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Admin</div>
+            <a href="#" class="sidebar-link active" data-section="pending" onclick="switchSection('pending')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                Pending Requests
+            </a>
+            <a href="#" class="sidebar-link" data-section="users" onclick="switchSection('users')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Users
+            </a>
+            <a href="#" class="sidebar-link" data-section="history" onclick="switchSection('history')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                History
+            </a>
+            <div class="sidebar-section-label" style="margin-top: var(--space-4);">Main</div>
+            <a href="dashboard.html" class="sidebar-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user">
+                <div class="sidebar-avatar" id="sidebar-avatar">A</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="sidebar-name">Admin</div>
+                    <div class="sidebar-user-email" id="sidebar-email">admin@gmail.com</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+                <h1 class="topbar-title" id="page-title">Pending Requests</h1>
+            </div>
+            <div class="topbar-right">
+                <span class="badge badge-warning" id="pending-count" style="margin-right: var(--space-2);">0 pending</span>
+                <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Sign Out</button>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <!-- Pending Requests -->
+            <div id="section-pending" class="dashboard-section">
+                <div class="page-header"><h2>Pending Upgrade Requests</h2></div>
+                <div id="pending-list">
+                    <div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div class="empty-state-title">No Pending Requests</div><div class="empty-state-text">All upgrade requests have been processed.</div></div>
+                </div>
+            </div>
+
+            <!-- Users -->
+            <div id="section-users" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>All Users</h2></div>
+                <div class="section-card">
+                    <div class="section-card-body">
+                        <div id="users-list">
+                            <div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="empty-state-title">No Users</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- History -->
+            <div id="section-history" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>Approval History</h2></div>
+                <div id="history-list">
+                    <div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div><div class="empty-state-title">No History</div></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Fullscreen Image Overlay -->
+    <div class="fullscreen-overlay" id="fullscreen-overlay" onclick="this.classList.remove('active')">
+        <img id="fullscreen-image" src="" alt="Payment Proof">
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let allUsers = [];
+        let allHistory = [];
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            const link = document.querySelector(`.sidebar-link[data-section="${section}"]`);
+            if (link) link.classList.add('active');
+            document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+            const el = document.getElementById('section-' + section);
+            if (el) el.style.display = 'block';
+            const titles = { pending: 'Pending Requests', users: 'Users', history: 'History' };
+            document.getElementById('page-title').textContent = titles[section] || 'Admin';
+            if (window.innerWidth <= 768) toggleSidebar();
+        }
+
+        function viewProof(base64) {
+            if (!base64) { Utils.showToast('No proof image available.', 'info'); return; }
+            document.getElementById('fullscreen-image').src = base64;
+            document.getElementById('fullscreen-overlay').classList.add('active');
+        }
+
+        async function loadPending() {
+            try {
+                const data = await ApiClient.get(CONFIG.ADMIN.PENDING_REQUESTS);
+                if (!data.success) { Utils.showToast('Failed to load requests.', 'error'); return; }
+                const list = document.getElementById('pending-list');
+                const requests = data.requests || [];
+                document.getElementById('pending-count').textContent = requests.length + ' pending';
+
+                if (requests.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div class="empty-state-title">No Pending Requests</div><div class="empty-state-text">All upgrade requests have been processed.</div></div>';
+                    return;
+                }
+
+                list.innerHTML = requests.map(req => `
+                    <div class="request-card">
+                        <div class="header">
+                            <div class="user-info">
+                                <div class="name">${Utils.escapeHtml(req.username)}</div>
+                                <div class="email">${Utils.escapeHtml(req.email)}</div>
+                            </div>
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
+                        <div class="meta">
+                            <span>Package: <strong>${req.package}</strong></span>
+                            <span>Amount: <strong>${req.amount?.toLocaleString()}₫</strong></span>
+                            <span>Date: <strong>${Utils.formatDate(req.created_at)}</strong></span>
+                        </div>
+                        ${req.payment_proof_url ? `
+                        <div style="margin-top: var(--space-3);">
+                            <img class="proof-image" src="${req.payment_proof_url}" alt="Payment Proof" onclick="viewProof('${req.payment_proof_url}')">
+                        </div>` : ''}
+                        <div class="actions">
+                            <button class="btn btn-primary btn-sm" onclick="approveRequest('${req.user_id}', '${req.package}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                                Phê duyệt
+                            </button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectRequest('${req.user_id}')">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                Từ chối
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) {
+                Utils.showToast(err.message || 'Error loading requests.', 'error');
+            }
+        }
+
+        async function approveRequest(userId, pkg) {
+            if (!confirm(`Phê duyệt gói ${pkg} cho user này?`)) return;
+            try {
+                const data = await ApiClient.post(CONFIG.ADMIN.APPROVE + '/' + userId, { package: pkg });
+                if (data.success) {
+                    Utils.showToast(data.message, 'success');
+                    loadPending();
+                    loadUsers();
+                } else {
+                    Utils.showToast(data.message || 'Approval failed.', 'error');
+                }
+            } catch (err) {
+                Utils.showToast(err.message || 'Error.', 'error');
+            }
+        }
+
+        async function rejectRequest(userId) {
+            if (!confirm('Từ chối yêu cầu này?')) return;
+            try {
+                const data = await ApiClient.post(CONFIG.ADMIN.REJECT + '/' + userId, {});
+                if (data.success) {
+                    Utils.showToast(data.message, 'info');
+                    loadPending();
+                } else {
+                    Utils.showToast(data.message || 'Rejection failed.', 'error');
+                }
+            } catch (err) {
+                Utils.showToast(err.message || 'Error.', 'error');
+            }
+        }
+
+        async function loadUsers() {
+            try {
+                const data = await ApiClient.get(CONFIG.ADMIN.USERS + '?per_page=100');
+                if (!data.success) return;
+                allUsers = data.users || [];
+                const list = document.getElementById('users-list');
+                if (allUsers.length === 0) {
+                    list.innerHTML = '<div class="empty-state">...</div>';
+                    return;
+                }
+                list.innerHTML = '<div class="table-container"><table><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Package</th><th>Created</th></tr></thead><tbody>' +
+                    allUsers.map(u => `<tr>
+                        <td>${Utils.escapeHtml(u.username)}</td>
+                        <td>${Utils.escapeHtml(u.email)}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'badge-warning' : 'badge-info'}">${u.role}</span></td>
+                        <td><span class="badge ${u.package === 'free' ? 'badge-info' : 'badge-success'}">${u.package}</span></td>
+                        <td>${Utils.formatDate(u.created_at)}</td>
+                    </tr>`).join('') +
+                    '</tbody></table></div>';
+            } catch (err) {
+                Utils.showToast(err.message || 'Error loading users.', 'error');
+            }
+        }
+
+        async function handleLogout() { await Auth.logout(); }
+
+        // ===== MAIN INIT: Gọi thẳng API /me, bypass Auth object cache =====
+        (async function() {
+            const token = sessionStorage.getItem(CONFIG.TOKEN.ACCESS_TOKEN_KEY);
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            ApiClient.init(token);
+
+            try {
+                const res = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.ME, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error('Not authenticated');
+
+                const user = data.user;
+                Auth._user = user; // Lưu cho các hàm khác
+
+                // Kiểm tra admin
+                if (!user || user.role !== 'admin') {
+                    window.location.href = 'dashboard.html';
+                    return;
+                }
+
+                // Admin - populate sidebar
+                document.getElementById('sidebar-name').textContent = user.displayName || user.username;
+                document.getElementById('sidebar-email').textContent = user.email;
+                document.getElementById('sidebar-avatar').textContent = (user.displayName || user.username || 'A')[0].toUpperCase();
+
+                loadPending();
+                loadUsers();
+            } catch (err) {
+                // Token expired - thử refresh
+                try {
+                    const refreshRes = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.REFRESH, {
+                        method: 'POST', credentials: 'include'
+                    });
+                    const refreshData = await refreshRes.json();
+                    if (refreshData.success && refreshData.accessToken) {
+                        sessionStorage.setItem(CONFIG.TOKEN.ACCESS_TOKEN_KEY, refreshData.accessToken);
+                        window.location.reload();
+                    } else {
+                        window.location.href = 'login.html';
+                    }
+                } catch (e) {
+                    window.location.href = 'login.html';
+                }
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - AuthGuard</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <style>
+        .admin-badge { background: #fef3c7; color: #92400e; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+        .proof-image { max-width: 200px; max-height: 150px; border-radius: 6px; cursor: pointer; border: 1px solid var(--color-border); }
+        .proof-image:hover { opacity: 0.8; }
+        .request-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: var(--space-4); margin-bottom: var(--space-4); }
+        .request-card .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-3); }
+        .request-card .user-info { display: flex; flex-direction: column; gap: 2px; }
+        .request-card .user-info .name { font-weight: 600; }
+        .request-card .user-info .email { font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+        .request-card .actions { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
+        .request-card .meta { display: flex; gap: var(--space-4); font-size: var(--font-size-sm); color: var(--color-text-secondary); }
+        .badge-pending { background: #fef3c7; color: #92400e; }
+        .badge-approved { background: #d1fae5; color: #065f46; }
+        .badge-rejected { background: #fee2e2; color: #991b1b; }
+        .fullscreen-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 1000; display: none; align-items: center; justify-content: center; cursor: pointer; }
+        .fullscreen-overlay.active { display: flex; }
+        .fullscreen-overlay img { max-width: 90%; max-height: 90%; border-radius: 8px; }
+    </style>
+</head>
+<body>
+    <div class="sidebar-overlay" id="sidebar-overlay" onclick="toggleSidebar()"></div>
+
+    <aside class="sidebar" id="sidebar" role="navigation" aria-label="Dashboard navigation">
+        <div class="sidebar-header">
+            <a href="index.html" class="sidebar-logo">
+                <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
+                <span>AuthGuard</span>
+            </a>
+        </div>
+        <nav class="sidebar-nav">
+            <div class="sidebar-section-label">Main</div>
+            <a href="#" class="sidebar-link active" data-section="overview" onclick="switchSection('overview')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Overview
+            </a>
+            <a href="#" class="sidebar-link" data-section="api-keys" onclick="switchSection('api-keys')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+                API Keys
+            </a>
+            <a href="#" class="sidebar-link" data-section="websites" onclick="switchSection('websites')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+                Websites
+            </a>
+            <a href="#" class="sidebar-link" data-section="transactions" onclick="switchSection('transactions')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                Lịch sử giao dịch
+            </a>
+            <!-- ADMIN SECTION - ẨN mặc định, chỉ hiện khi role=admin -->
+            <div id="admin-nav-section" style="display:none;">
+                <div class="sidebar-section-label" style="margin-top: var(--space-4); color: var(--color-warning);">Admin</div>
+                <a href="admin.html" class="sidebar-link">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                    Admin Panel
+                </a>
+                <a href="#" class="sidebar-link" data-section="admin-pending" onclick="switchSection('admin-pending')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    Pending Requests <span class="admin-badge" id="pending-badge">0</span>
+                </a>
+                <a href="#" class="sidebar-link" data-section="admin-users" onclick="switchSection('admin-users')">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                    Users
+                </a>
+            </div>
+            <div class="sidebar-section-label" style="margin-top: var(--space-4);">Settings</div>
+            <a href="#" class="sidebar-link" data-section="profile" onclick="switchSection('profile')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                Profile
+            </a>
+            <a href="#" class="sidebar-link" data-section="security" onclick="switchSection('security')">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Security
+            </a>
+            <a href="docs.html" class="sidebar-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+                Documentation
+            </a>
+        </nav>
+        <div class="sidebar-footer">
+            <div class="sidebar-user" onclick="switchSection('profile')">
+                <div class="sidebar-avatar" id="sidebar-avatar">U</div>
+                <div class="sidebar-user-info">
+                    <div class="sidebar-user-name" id="sidebar-name">User</div>
+                    <div class="sidebar-user-email" id="sidebar-email">user@gmail.com</div>
+                </div>
+            </div>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+                <h1 class="topbar-title" id="page-title">Overview</h1>
+            </div>
+            <div class="topbar-right">
+                <button class="btn btn-ghost btn-sm" onclick="handleLogout()">Sign Out</button>
+            </div>
+        </header>
+
+        <div class="page-content">
+            <div id="section-overview" class="dashboard-section">
+                <div class="page-header"><h2>Overview</h2></div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon primary"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg></div>
+                        </div>
+                        <div class="stat-card-value" id="stat-users">0</div>
+                        <div class="stat-card-label">Total Users</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon success"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+                        </div>
+                        <div class="stat-card-value" id="stat-sessions">0</div>
+                        <div class="stat-card-label">Active Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
+                        </div>
+                        <div class="stat-card-value" id="stat-keys">0</div>
+                        <div class="stat-card-label">API Keys</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-card-header">
+                            <div class="stat-card-icon info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
+                        </div>
+                        <div class="stat-card-value" id="stat-websites">0</div>
+                        <div class="stat-card-label">Websites</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-api-keys" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>API Keys</h2><button class="btn btn-primary btn-sm" onclick="createApiKey()">+ Create API Key</button></div>
+                <div class="section-card">
+                    <div class="section-card-header"><span class="section-card-title">Your API Keys</span></div>
+                    <div class="section-card-body"><div id="api-keys-list"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="empty-state-title">No API Keys</div><div class="empty-state-text">Create your first API key to start integrating.</div></div></div></div>
+                </div>
+            </div>
+
+            <div id="section-websites" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>Websites</h2><button class="btn btn-primary btn-sm" onclick="showAddWebsiteModal()">+ Add Website</button></div>
+                <div class="section-card">
+                    <div class="section-card-header"><span class="section-card-title">Connected Websites</span></div>
+                    <div class="section-card-body"><div id="websites-list"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="empty-state-title">No Websites Connected</div><div class="empty-state-text">Add your first website to start using AuthGuard.</div></div></div></div>
+                </div>
+            </div>
+
+            <div id="section-transactions" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>Lịch sử giao dịch</h2></div>
+                <div class="section-card">
+                    <div class="section-card-body">
+                        <div id="transactions-list">
+                            <div class="empty-state">
+                                <div class="empty-state-icon">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                                </div>
+                                <div class="empty-state-title">Chưa có giao dịch</div>
+                                <div class="empty-state-text">Bạn chưa thực hiện giao dịch nâng cấp gói nào.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-profile" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>Profile</h2></div>
+                <div class="section-card">
+                    <div class="section-card-header"><span class="section-card-title">Account Information</span></div>
+                    <div class="section-card-body">
+                        <form id="profile-form" onsubmit="updateProfile(event)">
+                            <div class="form-group"><label class="form-label">Username</label><input class="form-input" type="text" id="profile-username" required></div>
+                            <div class="form-group"><label class="form-label">Display Name</label><input class="form-input" type="text" id="profile-display-name"></div>
+                            <div class="form-group"><label class="form-label">Email</label><input class="form-input" type="email" id="profile-email" disabled style="opacity:0.6;"></div>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <div id="section-security" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>Security</h2></div>
+                <div class="section-card">
+                    <div class="section-card-header"><span class="section-card-title">Change Password</span></div>
+                    <div class="section-card-body">
+                        <form id="password-form" onsubmit="changePassword(event)">
+                            <div class="form-group"><label class="form-label">Current Password</label><input class="form-input" type="password" id="current-password" required></div>
+                            <div class="form-group"><label class="form-label">New Password</label><input class="form-input" type="password" id="new-password" required minlength="8"></div>
+                            <div class="form-group"><label class="form-label">Confirm New Password</label><input class="form-input" type="password" id="confirm-password" required></div>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </form>
+                    </div>
+                </div>
+                <div class="section-card" style="margin-top: var(--space-4);">
+                    <div class="section-card-header"><span class="section-card-title">Sessions</span></div>
+                    <div class="section-card-body">
+                        <p style="margin-bottom: var(--space-4);">Sign out from all active sessions across all devices.</p>
+                        <button class="btn btn-danger" onclick="logoutAll()">Sign Out All Devices</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ADMIN: Pending Requests -->
+            <div id="section-admin-pending" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>Pending Upgrade Requests</h2></div>
+                <div id="admin-pending-list">
+                    <div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div class="empty-state-title">No Pending Requests</div><div class="empty-state-text">All upgrade requests have been processed.</div></div>
+                </div>
+            </div>
+
+            <!-- ADMIN: Users -->
+            <div id="section-admin-users" class="dashboard-section" style="display:none;">
+                <div class="page-header"><h2>All Users</h2></div>
+                <div class="section-card">
+                    <div class="section-card-body">
+                        <div id="admin-users-list">
+                            <div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div><div class="empty-state-title">No Users</div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <div class="fullscreen-overlay" id="fullscreen-overlay" onclick="this.classList.remove('active')">
+        <img id="fullscreen-image" src="" alt="Payment Proof">
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        let apiKeys = [];
+        let websites = [];
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('active');
+        }
+
+        function switchSection(section) {
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            const link = document.querySelector(`.sidebar-link[data-section="${section}"]`);
+            if (link) link.classList.add('active');
+            document.querySelectorAll('.dashboard-section').forEach(s => s.style.display = 'none');
+            const el = document.getElementById('section-' + section);
+            if (el) el.style.display = 'block';
+            const titles = {
+                overview: 'Overview', 'api-keys': 'API Keys', websites: 'Websites',
+                transactions: 'Lịch sử giao dịch',
+                profile: 'Profile', security: 'Security',
+                'admin-pending': 'Pending Requests', 'admin-users': 'Users'
+            };
+            document.getElementById('page-title').textContent = titles[section] || 'Overview';
+            if (section === 'transactions') {
+                loadUserTransactions();
+            }
+            if (window.innerWidth <= 768) toggleSidebar();
+        }
+
+        function createApiKey() {
+            const key = 'ak_live_' + Array.from({length:32},()=>Math.random().toString(36)[2]).join('');
+            apiKeys.push({key, name:'Key '+(apiKeys.length+1), created:new Date().toISOString()});
+            renderApiKeys();
+            document.getElementById('new-api-key-display').textContent = key;
+            document.getElementById('api-key-modal').classList.add('active');
+        }
+
+        function renderApiKeys() {
+            const c = document.getElementById('api-keys-list');
+            if (!apiKeys.length) {
+                c.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="empty-state-title">No API Keys</div><div class="empty-state-text">Create your first API key.</div>';
+                return;
+            }
+            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>Key</th><th>Created</th><th>Actions</th></tr></thead><tbody>' +
+                apiKeys.map((k,i)=>'<tr><td>'+k.name+'</td><td><code style="font-family:var(--font-mono);font-size:var(--font-size-xs);color:var(--color-text-tertiary);">'+Utils.maskApiKey(k.key)+'</code></td><td>'+Utils.formatDate(k.created)+'</td><td><button class="btn btn-ghost btn-sm" onclick="deleteApiKey('+i+')">Delete</button></td></tr>').join('') +
+                '</tbody></table></div>';
+            document.getElementById('stat-keys').textContent = apiKeys.length;
+        }
+
+        function copyApiKey() {
+            Utils.copyToClipboard(document.getElementById('new-api-key-display').textContent);
+            Utils.showToast('API Key copied!', 'success');
+        }
+
+        function deleteApiKey(i) {
+            if (confirm('Delete this API key?')) { apiKeys.splice(i,1); renderApiKeys(); Utils.showToast('API Key deleted.','info'); }
+        }
+
+        function showAddWebsiteModal() { document.getElementById('add-website-modal').classList.add('active'); }
+
+        function addWebsite(e) {
+            e.preventDefault();
+            const url = document.getElementById('website-url').value.trim();
+            const name = document.getElementById('website-name').value.trim() || url;
+            websites.push({url,name,active:true,created:new Date().toISOString()});
+            renderWebsites();
+            closeModal('add-website-modal');
+            document.getElementById('add-website-form').reset();
+            Utils.showToast('Website added!','success');
+        }
+
+        function renderWebsites() {
+            const c = document.getElementById('websites-list');
+            if (!websites.length) {
+                c.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="empty-state-title">No Websites</div><div class="empty-state-text">Add your first website.</div>';
+                return;
+            }
+            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>URL</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+                websites.map((w,i)=>'<tr><td>'+w.name+'</td><td><code style="font-size:var(--font-size-xs);">'+w.url+'</code></td><td><span class="badge '+(w.active?'badge-success':'badge-warning')+'">'+(w.active?'Active':'Inactive')+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="toggleWebsite('+i+')">'+(w.active?'Disable':'Enable')+'</button><button class="btn btn-ghost btn-sm" onclick="deleteWebsite('+i+')">Delete</button></td></tr>').join('') +
+                '</tbody></table></div>';
+            document.getElementById('stat-websites').textContent = websites.length;
+        }
+
+        function toggleWebsite(i) { websites[i].active = !websites[i].active; renderWebsites(); }
+        function deleteWebsite(i) { if (confirm('Remove this website?')) { websites.splice(i,1); renderWebsites(); Utils.showToast('Website removed.','info'); }}
+        function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function updateProfile(e) {
+            e.preventDefault();
+            const username = document.getElementById('profile-username').value.trim();
+            const display_name = document.getElementById('profile-display-name').value.trim();
+            try {
+                const data = await Auth.updateProfile(username, display_name, null);
+                if (data.success) { Utils.showToast('Profile updated successfully!', 'success'); }
+            } catch (err) { Utils.showToast(err.message || 'Failed to update profile.', 'error'); }
+        }
+
+        async function changePassword(e) {
+            e.preventDefault();
+            const current = document.getElementById('current-password').value;
+            const newPw = document.getElementById('new-password').value;
+            const confirmPw = document.getElementById('confirm-password').value;
+            if (newPw !== confirmPw) { Utils.showToast('Passwords do not match.', 'error'); return; }
+            try {
+                const data = await Auth.changePassword(current, newPw);
+                if (data.success) { Utils.showToast('Password changed! Please sign in again.', 'success'); document.getElementById('password-form').reset(); }
+            } catch (err) { Utils.showToast(err.message || 'Failed to change password.', 'error'); }
+        }
+
+        async function handleLogout() { await Auth.logout(); }
+
+        async function logoutAll() {
+            if (!confirm('Sign out from all devices?')) return;
+            try { await Auth.logoutAll(); } catch (err) { Utils.showToast(err.message || 'Failed to logout all.', 'error'); }
+        }
+
+        async function loadUserTransactions() {
+            try {
+                const data = await ApiClient.get(CONFIG.PAYMENT.REQUESTS);
+                if (!data.success) return;
+                const list = document.getElementById('transactions-list');
+                const orders = data.orders || [];
+                if (orders.length === 0) {
+                    list.innerHTML = `
+                        <div class="empty-state">
+                            <div class="empty-state-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
+                            </div>
+                            <div class="empty-state-title">Chưa có giao dịch</div>
+                            <div class="empty-state-text">Bạn chưa thực hiện giao dịch nâng cấp gói nào.</div>
+                        </div>`;
+                    return;
+                }
+                
+                list.innerHTML = '<div class="table-container"><table><thead><tr><th>Mã giao dịch</th><th>Gói nâng cấp</th><th>Số tiền</th><th>Thời gian</th><th>Minh chứng</th><th>Trạng thái</th></tr></thead><tbody>' +
+                    orders.map(o => {
+                        let badgeClass = 'badge-pending';
+                        let statusText = 'Đang chờ duyệt';
+                        if (o.status === 'approved') {
+                            badgeClass = 'badge-approved';
+                            statusText = 'Thành công';
+                        } else if (o.status === 'rejected') {
+                            badgeClass = 'badge-rejected';
+                            statusText = 'Thất bại';
+                        }
+                        
+                        const proofHtml = o.payment_proof_url ? 
+                            `<button class="btn btn-ghost btn-sm" onclick="viewProof('${o.payment_proof_url}')">Xem ảnh</button>` : 
+                            `<span style="color: var(--color-text-tertiary); font-size: var(--font-size-xs);">Không có</span>`;
+
+                        return `<tr>
+                            <td><code style="font-family:var(--font-mono);font-size:var(--font-size-xs);">${o.id}</code></td>
+                            <td><span class="badge badge-info" style="text-transform: capitalize;">${o.package}</span></td>
+                            <td><strong>${o.amount?.toLocaleString()}₫</strong></td>
+                            <td>${Utils.formatDate(o.created_at)}</td>
+                            <td>${proofHtml}</td>
+                            <td><span class="badge ${badgeClass}">${statusText}</span></td>
+                        </tr>`;
+                    }).join('') + '</tbody></table></div>';
+            } catch (err) {
+                Utils.showToast(err.message || 'Lỗi tải lịch sử giao dịch.', 'error');
+            }
+        }
+
+        // === ADMIN FUNCTIONS ===
+        function viewProof(url) {
+            if (!url) { Utils.showToast('No proof image available.', 'info'); return; }
+            document.getElementById('fullscreen-image').src = url;
+            document.getElementById('fullscreen-overlay').classList.add('active');
+        }
+
+        async function loadAdminPending() {
+            try {
+                const data = await ApiClient.get(CONFIG.ADMIN.PENDING_REQUESTS);
+                if (!data.success) return;
+                const list = document.getElementById('admin-pending-list');
+                const requests = data.requests || [];
+                document.getElementById('pending-badge').textContent = requests.length;
+                if (requests.length === 0) {
+                    list.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div><div class="empty-state-title">No Pending Requests</div><div class="empty-state-text">All upgrade requests have been processed.</div></div>';
+                    return;
+                }
+                list.innerHTML = requests.map(req => `
+                    <div class="request-card">
+                        <div class="header">
+                            <div class="user-info">
+                                <div class="name">${Utils.escapeHtml(req.username)}</div>
+                                <div class="email">${Utils.escapeHtml(req.email)}</div>
+                            </div>
+                            <span class="badge badge-pending">Pending</span>
+                        </div>
+                        <div class="meta">
+                            <span>Package: <strong>${req.package}</strong></span>
+                            <span>Amount: <strong>${req.amount?.toLocaleString()}₫</strong></span>
+                            <span>Date: <strong>${Utils.formatDate(req.created_at)}</strong></span>
+                        </div>
+                        ${req.payment_proof_url ? `<div style="margin-top: var(--space-3);"><img class="proof-image" src="${req.payment_proof_url}" alt="Payment Proof" onclick="viewProof('${req.payment_proof_url}')"></div>` : ''}
+                        <div class="actions">
+                            <button class="btn btn-primary btn-sm" onclick="approveRequest('${req.user_id}', '${req.package}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Phe duyet</button>
+                            <button class="btn btn-danger btn-sm" onclick="rejectRequest('${req.user_id}')"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg> Tu choi</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (err) { Utils.showToast(err.message || 'Error loading requests.', 'error'); }
+        }
+
+        async function approveRequest(userId, pkg) {
+            if (!confirm('Phe duyet goi ' + pkg + ' cho user nay?')) return;
+            try {
+                const data = await ApiClient.post(CONFIG.ADMIN.APPROVE + '/' + userId, { package: pkg });
+                if (data.success) { Utils.showToast(data.message, 'success'); loadAdminPending(); loadAdminUsers(); }
+                else { Utils.showToast(data.message || 'Approval failed.', 'error'); }
+            } catch (err) { Utils.showToast(err.message || 'Error.', 'error'); }
+        }
+
+        async function rejectRequest(userId) {
+            if (!confirm('Tu choi yeu cau nay?')) return;
+            try {
+                const data = await ApiClient.post(CONFIG.ADMIN.REJECT + '/' + userId, {});
+                if (data.success) { Utils.showToast(data.message, 'info'); loadAdminPending(); }
+                else { Utils.showToast(data.message || 'Rejection failed.', 'error'); }
+            } catch (err) { Utils.showToast(err.message || 'Error.', 'error'); }
+        }
+
+        async function loadAdminUsers() {
+            try {
+                const data = await ApiClient.get(CONFIG.ADMIN.USERS + '?per_page=100');
+                if (!data.success) return;
+                const users = data.users || [];
+                const list = document.getElementById('admin-users-list');
+                if (users.length === 0) { list.innerHTML = '<div class="empty-state">...</div>'; return; }
+                list.innerHTML = '<div class="table-container"><table><thead><tr><th>Username</th><th>Email</th><th>Role</th><th>Package</th><th>Created</th></tr></thead><tbody>' +
+                    users.map(u => `<tr>
+                        <td>${Utils.escapeHtml(u.username)}</td>
+                        <td>${Utils.escapeHtml(u.email)}</td>
+                        <td><span class="badge ${u.role === 'admin' ? 'badge-warning' : 'badge-info'}">${u.role}</span></td>
+                        <td><span class="badge ${u.package === 'free' ? 'badge-info' : 'badge-success'}">${u.package}</span></td>
+                        <td>${Utils.formatDate(u.created_at)}</td>
+                    </tr>`).join('') + '</tbody></table></div>';
+            } catch (err) { Utils.showToast(err.message || 'Error loading users.', 'error'); }
+        }
+
+        // === MAIN INIT ===
+        (async function() {
+            var token = sessionStorage.getItem(CONFIG.TOKEN.ACCESS_TOKEN_KEY);
+            if (!token) { window.location.href = 'login.html'; return; }
+
+            ApiClient.init(token);
+
+            try {
+                var res = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.ME, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                var data = await res.json();
+                if (!data.success) throw new Error('Not authenticated');
+
+                var user = data.user;
+                Auth._user = user;
+
+                // Hien thi thong tin user
+                document.getElementById('sidebar-name').textContent = user.displayName || user.username;
+                document.getElementById('sidebar-email').textContent = user.email;
+                document.getElementById('sidebar-avatar').textContent = (user.displayName || user.username || 'U')[0].toUpperCase();
+                document.getElementById('profile-username').value = user.username || '';
+                document.getElementById('profile-display-name').value = user.displayName || '';
+                document.getElementById('profile-email').value = user.email || '';
+
+                // KIEM TRA ADMIN: neu role=admin thi hien 2 nut dac biet
+                console.log('User role:', user.role);
+                if (user.role === 'admin') {
+                    document.getElementById('admin-nav-section').style.display = 'block';
+                    loadAdminPending();
+                    loadAdminUsers();
+                }
+
+            } catch (err) {
+                try {
+                    var refreshRes = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.REFRESH, {
+                        method: 'POST', credentials: 'include'
+                    });
+                    var refreshData = await refreshRes.json();
+                    if (refreshData.success && refreshData.accessToken) {
+                        sessionStorage.setItem(CONFIG.TOKEN.ACCESS_TOKEN_KEY, refreshData.accessToken);
+                        window.location.reload();
+                    } else { window.location.href = 'login.html'; }
+                } catch (e) { window.location.href = 'login.html'; }
+            }
+        })();
+    </script>
+</body>
+</html>

@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AuthGuard - Enterprise Authentication Made Simple</title>
+    <meta name="description" content="Production-grade authentication service. Google OAuth, JWT, session management.">
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/components.css">
+    <link rel="stylesheet" href="css/landing.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="nav" role="navigation" aria-label="Main navigation">
+        <div class="nav-inner">
+            <a href="index.html" class="nav-logo" aria-label="AuthGuard Home">
+                <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
+                <span>AuthGuard</span>
+            </a>
+            <div class="nav-links" role="menubar">
+                <a href="#features" role="menuitem">Features</a>
+                <a href="#security" role="menuitem">Security</a>
+                <a href="#pricing" role="menuitem">Pricing</a>
+                <a href="#faq" role="menuitem">FAQ</a>
+                <a href="docs.html" role="menuitem">Docs</a>
+            </div>
+            <div class="nav-actions">
+                <a href="login.html" class="btn btn-ghost btn-sm">Sign In</a>
+                <a href="register.html" class="btn btn-primary btn-sm">Get Started</a>
+                <button class="nav-mobile-toggle" aria-label="Toggle menu">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero -->
+    <section class="hero" id="hero">
+        <div class="hero-bg">
+            <div class="hero-gradient"></div>
+            <div class="hero-grid"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge reveal">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                Enterprise-Grade Security
+            </div>
+            <h1 class="hero-title reveal reveal-delay-1">Authentication<br><span class="text-gradient">Simplified</span></h1>
+            <p class="hero-description reveal reveal-delay-2">Production-grade authentication service for modern applications. Google OAuth, JWT, session management, and enterprise security — all in one platform.</p>
+            <div class="hero-actions reveal reveal-delay-3">
+                <a href="register.html" class="btn btn-primary btn-lg">Start Building Free <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+                <a href="docs.html" class="btn btn-secondary btn-lg">Read Documentation</a>
+            </div>
+            <div class="hero-stats reveal reveal-delay-4">
+                <div class="hero-stat"><div class="hero-stat-number" data-count="100">0</div><div class="hero-stat-label">API Endpoints</div></div>
+                <div class="hero-stat"><div class="hero-stat-number" data-count="99.9">0</div><div class="hero-stat-label">Uptime %</div></div>
+                <div class="hero-stat"><div class="hero-stat-number" data-count="50">0</div><div class="hero-stat-label">Security Features</div></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Features</span>
+                <h2 class="section-title">Everything You Need for Authentication</h2>
+                <p class="section-description">From social login to enterprise security, we provide all the tools to build a secure authentication system.</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div>
+                    <h3 class="feature-title">Social Login</h3>
+                    <p class="feature-description">Google OAuth 2.0 integration with automatic profile sync. Support for multiple providers.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+                    <h3 class="feature-title">JWT & Sessions</h3>
+                    <p class="feature-description">Secure access tokens with automatic refresh rotation. Replay attack protection included.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-3">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <h3 class="feature-title">Enterprise Security</h3>
+                    <p class="feature-description">Rate limiting, brute force protection, audit logging, and session management across all devices.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-1">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg></div>
+                    <h3 class="feature-title">RESTful API</h3>
+                    <p class="feature-description">Clean, consistent REST API endpoints. Every response follows the same structured format.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-2">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg></div>
+                    <h3 class="feature-title">Email Notifications</h3>
+                    <p class="feature-description">Automated welcome emails with beautiful HTML templates. Security alerts and account updates.</p>
+                </div>
+                <div class="feature-card reveal reveal-delay-3">
+                    <div class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+                    <h3 class="feature-title">API Key Management</h3>
+                    <p class="feature-description">Generate and manage API keys for your applications. Domain-level restrictions and usage tracking.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Security -->
+    <section class="security" id="security">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Security</span>
+                <h2 class="section-title">Enterprise-Grade Protection</h2>
+                <p class="section-description">Every layer of your authentication system is protected by industry-standard security measures.</p>
+            </div>
+            <div class="security-grid">
+                <div class="security-card reveal">
+                    <div class="security-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="security-card-content"><h4>Encryption at Rest</h4><p>All data encrypted with AES-256. Tokens signed with RS256.</p></div>
+                </div>
+                <div class="security-card reveal reveal-delay-1">
+                    <div class="security-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="security-card-content"><h4>Brute Force Protection</h4><p>Rate limiting and progressive delay after failed attempts.</p></div>
+                </div>
+                <div class="security-card reveal reveal-delay-2">
+                    <div class="security-card-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+                    <div class="security-card-content"><h4>Session Management</h4><p>View and manage active sessions across all devices.</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="pricing" id="pricing">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Pricing</span>
+                <h2 class="section-title">Simple, Transparent Pricing</h2>
+                <p class="section-description">Start for free, scale as you grow. No hidden fees.</p>
+            </div>
+            <div class="pricing-grid">
+                <div class="pricing-card pricing-card-free reveal">
+                    <div class="pricing-card-badge pricing-card-badge-free">Miễn phí</div>
+                    <h3 class="pricing-card-title">Free</h3>
+                    <div class="pricing-card-price"><span class="pricing-amount">0₫</span><span class="pricing-period">/tháng</span></div>
+                    <ul class="pricing-card-features">
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Up to 100 users</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Basic authentication</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> JWT access tokens</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Email support</li>
+                    </ul>
+                    <a href="register.html" class="btn btn-primary btn-block">Get Started</a>
+                </div>
+                <div class="pricing-card pricing-card-featured reveal reveal-delay-1">
+                    <div class="pricing-card-badge">Popular</div>
+                    <h3 class="pricing-card-title">Pro</h3>
+                    <div class="pricing-card-price"><span class="pricing-amount">29,000₫</span><span class="pricing-period">/vĩnh viễn</span></div>
+                    <ul class="pricing-card-features">
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Up to 10,000 users</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Social login (Google OAuth)</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> JWT & refresh tokens</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Session management</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Priority support</li>
+                    </ul>
+                    <a href="purchase.html?plan=pro" class="btn btn-primary btn-block">Mua ngay</a>
+                </div>
+                <div class="pricing-card pricing-card-enterprise reveal reveal-delay-2">
+                    <div class="pricing-card-badge pricing-card-badge-enterprise">Cao cấp</div>
+                    <h3 class="pricing-card-title">Enterprise</h3>
+                    <div class="pricing-card-price"><span class="pricing-amount">99,000₫</span><span class="pricing-period">/vĩnh viễn</span></div>
+                    <ul class="pricing-card-features">
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Unlimited users</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Social login (Google OAuth)</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Custom integrations</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Audit logging</li>
+                        <li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg> Dedicated support</li>
+                    </ul>
+                    <a href="purchase.html?plan=enterprise" class="btn btn-primary btn-block">Mua ngay</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="faq" id="faq">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">FAQ</span>
+                <h2 class="section-title">Frequently Asked Questions</h2>
+                <p class="section-description">Everything you need to know about AuthGuard.</p>
+            </div>
+            <div class="faq-list reveal">
+                <div class="faq-item">
+                    <div class="faq-question"><span>AuthGuard là gì?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>AuthGuard là nền tảng xác thực (Authentication Platform) độc lập, tương tự Clerk, cung cấp đăng nhập bằng username, Gmail, Google OAuth, quản lý session, JWT token, và bảo mật đa lớp cho ứng dụng hiện đại.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Làm thế nào để đăng ký tài khoản?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Bạn có thể đăng ký bằng email Gmail + mật khẩu (tối thiểu 8 ký tự) hoặc đăng ký nhanh bằng Google OAuth. Username phải từ 3-20 ký tự, chỉ gồm chữ cái, số và dấu gạch dưới.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Google OAuth hoạt động thế nào?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Người dùng đăng nhập bằng tài khoản Google. AuthGuard xác thực ID Token qua Google Identity Services, tự động tạo tài khoản mới nếu chưa tồn tại, hoặc liên kết với tài khoản hiện có nếu email đã được đăng ký trước đó.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Hệ thống có bảo mật không?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Có. AuthGuard sử dụng: JWT ký HS256, bcrypt với 12 vòng salt cho mật khẩu, HttpOnly Cookie cho refresh token, rate limiting (5 lần/15 phút), bảo vệ brute force, phát hiện tấn công replay, và ghi nhật ký kiểm toán cho mọi sự kiện xác thực.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Token rotation là gì?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Mỗi lần refresh token, AuthGuard thu hồi token cũ và cấp token mới. Nếu token cũ bị dùng lại (replay attack), toàn bộ session của user sẽ bị thu hồi ngay lập tức, ngăn chặn kẻ tấn công chiếm quyền truy cập.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Làm sao để tích hợp AuthGuard vào backend của tôi?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Bạn có 2 cách: (1) Dùng chung JWT_ACCESS_SECRET để tự verify token trong backend (Flask, Node.js, Django, Next.js đều hỗ trợ), hoặc (2) Gọi API POST /api/auth/verify để xác thực token từ xa. Xem tài liệu Docs để biết chi tiết.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Có hỗ trợ đăng nhập nhiều thiết bị không?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Có. Mỗi lần đăng nhập tạo một session riêng biệt. Bạn có thể xem và quản lý tất cả session trong dashboard, đăng xuất một thiết bị hoặc tất cả thiết bị cùng lúc.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Tôi có thể liên kết hoặc hủy liên kết Google account không?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Có. Bạn có thể liên kết Google account với tài khoản hiện tại để đăng nhập bằng cả hai cách. Khi hủy liên kết, bạn cần có mật khẩu để đảm bảo vẫn có cách đăng nhập khác.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Làm thế nào để đổi mật khẩu?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>Vào mục Security trong Dashboard, nhập mật khẩu hiện tại và mật khẩu mới (tối thiểu 8 ký tự). Sau khi đổi mật khẩu thành công, tất cả thiết bị khác sẽ bị đăng xuất để đảm bảo an toàn.</p></div>
+                </div>
+                <div class="faq-item">
+                    <div class="faq-question"><span>Có những gói dịch vụ nào?</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"/></svg></div>
+                    <div class="faq-answer"><p>AuthGuard có 3 gói: Free (100 người dùng, xác thực cơ bản), Pro (29,000₫ vĩnh viễn - 10,000 người dùng, Google OAuth, quản lý session), và Enterprise (99,000₫ vĩnh viễn - không giới hạn người dùng, audit logging, hỗ trợ riêng).</p></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
+                    <span>AuthGuard</span>
+                </div>
+                <div class="footer-links">
+                    <a href="docs.html">Documentation</a>
+                    <a href="#features">Features</a>
+                    <a href="#pricing">Pricing</a>
+                </div>
+                <div class="footer-copyright">&copy; Chu Tich Chuot auth-platform copyright.</div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/landing.js"></script>
+    <script src="js/nav.js"></script>
+</body>
+</html>
