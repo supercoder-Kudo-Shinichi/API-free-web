@@ -5,7 +5,32 @@
  * Override bằng window.__API_BASE_URL trước khi script load.
  */
 
-const DEFAULT_API_BASE_URL = window.__API_BASE_URL || (window.location && window.location.origin ? window.location.origin : '');
+const resolveDefaultApiBaseUrl = () => {
+    if (window.__API_BASE_URL) {
+        return window.__API_BASE_URL;
+    }
+
+    if (!window.location) {
+        return '';
+    }
+
+    const { protocol, hostname, port } = window.location;
+    const currentOrigin = `${protocol}//${hostname}${port ? `:${port}` : ''}`;
+
+    if (!port || port === '5000') {
+        return currentOrigin;
+    }
+
+    // Local development fallback when the frontend is served from a different port
+    // but the Flask backend is still running on port 5000.
+    if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '0.0.0.0') {
+        return `${protocol}//${hostname}:5000`;
+    }
+
+    return currentOrigin;
+};
+
+const DEFAULT_API_BASE_URL = resolveDefaultApiBaseUrl();
 
 const CONFIG = {
     API_BASE_URL: DEFAULT_API_BASE_URL,

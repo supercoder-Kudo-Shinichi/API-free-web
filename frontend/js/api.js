@@ -10,7 +10,7 @@
 const ApiClient = {
     _accessToken: null,
     _refreshPromise: null,
-    _defaultTimeoutMs: 8000,
+    _defaultTimeoutMs: 20000,
 
     /**
      * Initialize with access token from memory.
