@@ -5,8 +5,10 @@
  * Override bằng window.__API_BASE_URL trước khi script load.
  */
 
+const DEFAULT_API_BASE_URL = window.__API_BASE_URL || (window.location && window.location.origin ? window.location.origin : '');
+
 const CONFIG = {
-    API_BASE_URL: window.__API_BASE_URL || 'http://localhost:5000',
+    API_BASE_URL: DEFAULT_API_BASE_URL,
 
     TOKEN: {
         ACCESS_TOKEN_KEY: 'authguard_access_token',
