@@ -9,18 +9,34 @@ class Config:
     PORT = int(os.getenv("PORT", 5000))
     ENV = os.getenv("FLASK_ENV", "development")
     SECRET_KEY = os.getenv("SECRET_KEY", "flask-secret-key-clerk-clone-98765")
-    
+
+    def _normalize_database_url(raw_url: str) -> str:
+        if not raw_url:
+            return "sqlite:///dev.db"
+
+        normalized = raw_url.strip()
+        if normalized.startswith("postgres://"):
+            normalized = re.sub(r"^postgres://", "postgresql://", normalized)
+
+        if normalized.startswith("postgresql://") and "sslmode=" not in normalized:
+            normalized = f"{normalized}?sslmode=require"
+
+        if normalized.startswith("postgresql://") and "connect_timeout=" not in normalized:
+            separator = "&" if "?" in normalized else "?"
+            normalized = f"{normalized}{separator}connect_timeout=5"
+
+        return normalized
+
     # Auto-fix Railway's PostgreSQL connection string (postgres:// → postgresql://)
     _raw_db_url = os.getenv("DATABASE_URL", "sqlite:///dev.db")
-    if _raw_db_url and _raw_db_url.startswith("postgres://"):
-        _raw_db_url = re.sub(r"^postgres://", "postgresql://", _raw_db_url)
-    SQLALCHEMY_DATABASE_URI = _raw_db_url
+    SQLALCHEMY_DATABASE_URI = _normalize_database_url(_raw_db_url)
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     # Allow up to 20MB JSON body (for base64 images)
     MAX_CONTENT_LENGTH = 20 * 1024 * 1024
     SQLALCHEMY_ENGINE_OPTIONS = {
         "pool_pre_ping": True,
         "pool_recycle": 300,
+        "pool_timeout": 5,
     }
 
     JWT_ACCESS_SECRET = os.getenv("JWT_ACCESS_SECRET", "access-token-secret-key-12345")

@@ -3,6 +3,7 @@ import os
 os.environ["FLASK_ENV"] = "test"
 
 import unittest
+import importlib
 import json
 from app import create_app
 from models import db, User, Session, AuditLog
@@ -53,6 +54,19 @@ class AuthIntegrationTestCase(unittest.TestCase):
             content_type='application/json',
             headers=headers
         )
+
+    def test_postgres_database_url_is_configured_for_railway(self):
+        import config
+        original_db_url = os.environ.get("DATABASE_URL")
+        os.environ["DATABASE_URL"] = "postgres://user:pass@host:5432/authdb"
+        reloaded_config = importlib.reload(config)
+        self.assertIn("sslmode=require", reloaded_config.Config.SQLALCHEMY_DATABASE_URI)
+        self.assertIn("connect_timeout=5", reloaded_config.Config.SQLALCHEMY_DATABASE_URI)
+        if original_db_url is None:
+            os.environ.pop("DATABASE_URL", None)
+        else:
+            os.environ["DATABASE_URL"] = original_db_url
+        importlib.reload(config)
 
     # 1. TEST REGISTRATION FLOW
     def test_registration_flow(self):

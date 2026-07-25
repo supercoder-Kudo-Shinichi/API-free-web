@@ -59,10 +59,12 @@ def create_app(config_class=Config, test_config=None):
     @app.route('/health', methods=['GET'])
     def health():
         try:
-            # Check database connection
-            db.session.execute(db.text("SELECT 1"))
+            # Check database connection with a short timeout using the engine directly
+            with db.engine.connect() as connection:
+                connection.execute(db.text("SELECT 1"))
             return jsonify({"status": "ok", "database": "connected"}), 200
         except Exception as e:
+            app.logger.exception("Health check failed")
             return jsonify({"status": "error", "database": "disconnected", "error": str(e)}), 500
 
     # Global Error Handler to prevent leakage of traceback info
