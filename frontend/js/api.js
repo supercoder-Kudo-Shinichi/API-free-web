@@ -10,6 +10,7 @@
 const ApiClient = {
     _accessToken: null,
     _refreshPromise: null,
+    _defaultTimeoutMs: 8000,
 
     /**
      * Initialize with access token from memory.
@@ -63,11 +64,19 @@ const ApiClient = {
             headers['Authorization'] = `Bearer ${this._accessToken}`;
         }
 
+        const timeoutMs = options.timeoutMs || this._defaultTimeoutMs;
+        const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+        const timeoutId = controller ? setTimeout(() => controller.abort(), timeoutMs) : null;
+
         const fetchOptions = {
             method: options.method || 'GET',
             headers,
             credentials: 'include', // Send cookies (refresh_token)
         };
+
+        if (controller) {
+            fetchOptions.signal = controller.signal;
+        }
 
         if (options.body) {
             fetchOptions.body = JSON.stringify(options.body);
@@ -77,7 +86,12 @@ const ApiClient = {
         try {
             response = await fetch(url, fetchOptions);
         } catch (err) {
+            if (err && err.name === 'AbortError') {
+                throw { success: false, code: 'TIMEOUT', message: 'The server is taking too long to respond. Please try again.' };
+            }
             throw { success: false, code: 'NETWORK_ERROR', message: 'Cannot connect to server. Please check your connection.' };
+        } finally {
+            if (timeoutId) clearTimeout(timeoutId);
         }
 
         // Handle 401 - try token refresh

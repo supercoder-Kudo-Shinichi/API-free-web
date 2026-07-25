@@ -264,10 +264,7 @@
             ApiClient.init(token);
 
             try {
-                const res = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.ME, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                const data = await res.json();
+                const data = await ApiClient.getMe();
                 if (!data.success) throw new Error('Not authenticated');
 
                 const user = data.user;
@@ -289,10 +286,7 @@
             } catch (err) {
                 // Token expired - thử refresh
                 try {
-                    const refreshRes = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.REFRESH, {
-                        method: 'POST', credentials: 'include'
-                    });
-                    const refreshData = await refreshRes.json();
+                    const refreshData = await ApiClient.post(CONFIG.ENDPOINTS.REFRESH, {}, {});
                     if (refreshData.success && refreshData.accessToken) {
                         sessionStorage.setItem(CONFIG.TOKEN.ACCESS_TOKEN_KEY, refreshData.accessToken);
                         window.location.reload();

@@ -493,10 +493,7 @@
             ApiClient.init(token);
 
             try {
-                var res = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.ME, {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                });
-                var data = await res.json();
+                var data = await ApiClient.getMe();
                 if (!data.success) throw new Error('Not authenticated');
 
                 var user = data.user;
@@ -520,10 +517,7 @@
 
             } catch (err) {
                 try {
-                    var refreshRes = await fetch(CONFIG.API_BASE_URL + CONFIG.ENDPOINTS.REFRESH, {
-                        method: 'POST', credentials: 'include'
-                    });
-                    var refreshData = await refreshRes.json();
+                    var refreshData = await ApiClient.post(CONFIG.ENDPOINTS.REFRESH, {}, {});
                     if (refreshData.success && refreshData.accessToken) {
                         sessionStorage.setItem(CONFIG.TOKEN.ACCESS_TOKEN_KEY, refreshData.accessToken);
                         window.location.reload();
