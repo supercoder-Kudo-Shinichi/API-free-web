@@ -149,22 +149,22 @@ def request_upgrade():
 def get_my_requests():
     user_id = g.user.get('userId')
     orders = Order.query.filter_by(user_id=user_id).order_by(Order.created_at.desc()).all()
+    orders_data = []
+    for o in orders:
+        orders_data.append({
+            'id': o.id,
+            'package': o.package,
+            'amount': o.amount,
+            'currency': o.currency,
+            'status': o.status,
+            'has_proof': o.payment_proof_url is not None,
+            'payment_proof_url': o.payment_proof_url,
+            'created_at': o.created_at.isoformat(),
+        })
     return jsonify(build_success_response(
         message='Purchase history loaded.',
-        orders=[
-            {
-                'id': o.id,
-                'package': o.package,
-                'amount': o.amount,
-                'currency': o.currency,
-                'status': o.status,
-                'has_proof': o.payment_proof_url is not None,
-                'payment_proof_url': o.payment_proof_url,
-                'created_at': o.created_at.isoformat(),
-            }
-            for o in orders
-        ]
-    }), 200
+        orders=orders_data
+    )), 200
 
 
 # 2b. UPDATE PROOF for an existing pending order
@@ -244,7 +244,8 @@ def list_api_keys():
     user_id = g.user.get('userId')
     # Show ALL keys (including revoked) so the frontend can render real status
     keys = ApiKey.query.filter_by(user_id=user_id).order_by(ApiKey.created_at.desc()).all()
-    return jsonify(build_success_response(message='API keys loaded.', keys=[k.to_dict() for k in keys])), 200
+    keys_data = [k.to_dict() for k in keys]
+    return jsonify(build_success_response(message='API keys loaded.', keys=keys_data)), 200
 
 
 @payment_bp.route('/keys', methods=['POST'])
@@ -286,7 +287,8 @@ def revoke_api_key(key_id):
 def list_websites():
     user_id = g.user.get('userId')
     websites = Website.query.filter_by(user_id=user_id, active=True).order_by(Website.created_at.desc()).all()
-    return jsonify(build_success_response(message='Websites loaded.', websites=[w.to_dict() for w in websites])), 200
+    websites_data = [w.to_dict() for w in websites]
+    return jsonify(build_success_response(message='Websites loaded.', websites=websites_data)), 200
 
 
 @payment_bp.route('/websites', methods=['POST'])
@@ -362,7 +364,8 @@ def admin_get_users():
     page = request.args.get('page', 1, type=int)
     per_page = request.args.get('per_page', 20, type=int)
     users, total = UserService.get_all_users(page, per_page)
-    return jsonify(build_success_response(message='Users loaded.', users=[u.to_dict() for u in users], total=total, page=page, per_page=per_page)), 200
+    users_data = [u.to_dict() for u in users]
+    return jsonify(build_success_response(message='Users loaded.', users=users_data, total=total, page=page, per_page=per_page)), 200
 
 
 # 5. ADMIN: GET PACKAGE USAGE SUMMARY
