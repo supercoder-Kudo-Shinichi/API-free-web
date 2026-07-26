@@ -46,7 +46,7 @@
         } else {
             navActions.innerHTML = '' +
                 '<a href="login.html" class="btn btn-ghost btn-sm">Sign In</a>' +
-                '<a href="register.html" class="btn btn-primary btn-sm">Get Started</a>' +
+                '<a href="register.html" class="btn btn-primary btn-sm">Sign up</a>' +
                 '<button class="nav-mobile-toggle" aria-label="Toggle menu">' +
                     '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12h18M3 6h18M3 18h18"/></svg>' +
                 '</button>';

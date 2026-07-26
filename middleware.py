@@ -37,11 +37,10 @@ def rate_limit(limit_type="global"):
             _rate_limit_store[key] = [t for t in _rate_limit_store[key] if now - t < window]
 
             if len(_rate_limit_store[key]) >= max_attempts:
-                return jsonify({
-                    "success": False,
-                    "code": "TOO_MANY_REQUESTS",
-                    "message": "Too many requests. Please try again later."
-                }), 429
+                return jsonify(build_error_response(
+                    "TOO_MANY_REQUESTS",
+                    "Too many requests. Please try again later."
+                )), 429
 
             # Record current timestamp
             _rate_limit_store[key].append(now)
@@ -57,11 +56,10 @@ def require_admin(f):
         from services.user_service import UserService
         user = UserService.find_by_id(user_id)
         if not user or user.role != 'admin':
-            return jsonify({
-                "success": False,
-                "code": "FORBIDDEN",
-                "message": "Admin access required."
-            }), 403
+            return jsonify(build_error_response(
+                "FORBIDDEN",
+                "Admin access required."
+            )), 403
         return f(*args, **kwargs)
     return decorated_function
 
@@ -70,22 +68,20 @@ def require_auth(f):
     def decorated_function(*args, **kwargs):
         auth_header = request.headers.get("Authorization")
         if not auth_header or not auth_header.startswith("Bearer "):
-            return jsonify({
-                "success": False,
-                "code": "UNAUTHORIZED",
-                "message": "Authorization token is required."
-            }), 401
+            return jsonify(build_error_response(
+                "UNAUTHORIZED",
+                "Authorization token is required."
+            )), 401
 
         token = auth_header.split(" ")[1]
         try:
             payload = TokenService.verify_access_token(token)
             g.user = payload
         except Exception as e:
-            return jsonify({
-                "success": False,
-                "code": "TOKEN_EXPIRED_OR_INVALID",
-                "message": str(e)
-            }), 401
+            return jsonify(build_error_response(
+                "TOKEN_EXPIRED_OR_INVALID",
+                str(e)
+            )), 401
 
         return f(*args, **kwargs)
     return decorated_function
@@ -106,6 +102,22 @@ def add_cors_headers(response=None):
     if request.method == 'OPTIONS':
         response.status_code = 200
     return response
+
+def build_success_response(message: str = None, **payload):
+    response = {"success": True}
+    if message is not None:
+        response["message"] = message
+    if payload:
+        response.update(payload)
+    return response
+
+
+def build_error_response(code: str, message: str, **payload):
+    response = {"success": False, "code": code, "message": message}
+    if payload:
+        response.update(payload)
+    return response
+
 
 def log_audit_event(event: str, status: str, user_id: str = None, details: dict = None):
     try:

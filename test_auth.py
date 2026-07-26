@@ -5,6 +5,8 @@ os.environ["FLASK_ENV"] = "test"
 import unittest
 import importlib
 import json
+from datetime import datetime
+from unittest.mock import patch
 from app import create_app
 from models import db, User, Session, AuditLog
 from services.user_service import UserService
@@ -104,6 +106,24 @@ class AuthIntegrationTestCase(unittest.TestCase):
         self.assertIn('accessToken', data)
         self.assertIn('refreshToken', data)
         print("[OK] Registration successful")
+
+    def test_auth_success_responses_use_consistent_envelope(self):
+        print("\n--- Testing standardized auth response envelope ---")
+
+        res = self.post_json('/api/auth/register', {
+            "username": "EnvelopeUser",
+            "email": "envelope@gmail.com",
+            "password": "securePassword123"
+        })
+
+        self.assertEqual(res.status_code, 201)
+        data = res.get_json()
+        self.assertTrue(data['success'])
+        self.assertIn('message', data)
+        self.assertIn('accessToken', data)
+        self.assertIn('user', data)
+        self.assertEqual(data['user']['email'], 'envelope@gmail.com')
+        print("[OK] Auth success responses expose a consistent envelope")
 
     # 2. TEST LOGIN FLOW
     def test_login_flow(self):
@@ -275,7 +295,94 @@ class AuthIntegrationTestCase(unittest.TestCase):
         self.assertTrue(config.Config.GOOGLE_CLIENT_ID)
         print("[OK] Google client ID is configured by default")
 
-    # 7. TEST RATE LIMITER
+    def test_account_backup_and_restore(self):
+        print("\n--- Testing Account Backup & Restore ---")
+        with self.app.app_context():
+            user = UserService.create_user(
+                username="backupuser",
+                email="backupuser@gmail.com",
+                password_hash="hashed",
+                package='free'
+            )
+            user.package = 'pro'
+            user.package_activated_at = datetime.utcnow()
+            db.session.commit()
+
+            stored = {}
+            def fake_save(data):
+                stored['data'] = data
+                return 'backup-1'
+
+            def fake_get_backups(user_id=None):
+                return [stored['data']] if stored.get('data') else []
+
+            with patch('services.user_service.SanityService.save_account_backup', side_effect=fake_save), patch('services.user_service.SanityService.get_account_backups', side_effect=fake_get_backups):
+                UserService.sync_account_backup(user)
+                user.package = 'free'
+                user.package_activated_at = None
+                db.session.commit()
+                restored = UserService.restore_account_backup(user.id)
+                self.assertEqual(restored.package, 'pro')
+        print("[OK] Account backup and restore work")
+
+    # 7. TEST PACKAGE USAGE + API KEY FLOW
+    def test_package_usage_and_api_key_flow(self):
+        print("\n--- Testing Package Usage & API Key Flow ---")
+
+        reg = self.post_json('/api/auth/register', {
+            "username": "quotauser",
+            "email": "quotauser@gmail.com",
+            "password": "password123"
+        })
+        access_token = reg.get_json()['accessToken']
+
+        keys_res = self.client.post('/api/keys', data=json.dumps({'name': 'Test Key'}), content_type='application/json', headers={'Authorization': f'Bearer {access_token}'})
+        self.assertEqual(keys_res.status_code, 201)
+        self.assertTrue(keys_res.get_json()['success'])
+
+        usage_res = self.client.get('/api/package/usage', headers={'Authorization': f'Bearer {access_token}'})
+        self.assertEqual(usage_res.status_code, 200)
+        self.assertEqual(usage_res.get_json()['package']['package'], 'free')
+        self.assertIn('used', usage_res.get_json()['package'])
+        self.assertIn('remaining', usage_res.get_json()['package'])
+
+        admin_reg = self.post_json('/api/auth/register', {
+            "username": "adminquota",
+            "email": "soladzpro@gmail.com",
+            "password": "password123"
+        })
+        admin_token = admin_reg.get_json()['accessToken']
+        admin_usage = self.client.get('/api/admin/package-usage', headers={'Authorization': f'Bearer {admin_token}'})
+        self.assertEqual(admin_usage.status_code, 200)
+        self.assertTrue(admin_usage.get_json()['success'])
+        self.assertIn('packages', admin_usage.get_json())
+        print("[OK] Package usage and API key flow work")
+
+    def test_external_verification_with_api_key(self):
+        print("\n--- Testing External Verification With API Key ---")
+
+        reg = self.post_json('/api/auth/register', {
+            "username": "integrator",
+            "email": "integrator@gmail.com",
+            "password": "password123"
+        })
+        access_token = reg.get_json()['accessToken']
+
+        keys_res = self.client.post('/api/keys', data=json.dumps({'name': 'External App'}), content_type='application/json', headers={'Authorization': f'Bearer {access_token}'})
+        self.assertEqual(keys_res.status_code, 201)
+        api_key = keys_res.get_json()['key']
+
+        verify_res = self.client.post('/api/integrations/verify', data=json.dumps({'accessToken': access_token}), content_type='application/json', headers={'X-API-Key': api_key})
+        self.assertEqual(verify_res.status_code, 200)
+        body = verify_res.get_json()
+        self.assertTrue(body['success'])
+        self.assertTrue(body['valid'])
+        self.assertEqual(body['tokenType'], 'access')
+        self.assertIn('expiresAt', body)
+        self.assertEqual(body['user']['email'], 'integrator@gmail.com')
+        print("[OK] External verification accepted API-key-based requests")
+
+    # 8. TEST RATE LIMITER
     def test_rate_limiter(self):
         print("\n--- Testing Rate Limiter & Brute-force Block ---")
 

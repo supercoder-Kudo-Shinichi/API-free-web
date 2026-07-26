@@ -141,6 +141,12 @@
                         <div class="stat-card-label">Websites</div>
                     </div>
                 </div>
+                <div class="section-card" style="margin-top: var(--space-4);">
+                    <div class="section-card-header"><span class="section-card-title">Package Quota</span></div>
+                    <div class="section-card-body" id="quota-summary-card">
+                        <div class="empty-state"><div class="empty-state-title">Loading quota…</div></div>
+                    </div>
+                </div>
             </div>
 
             <div id="section-api-keys" class="dashboard-section" style="display:none;">
@@ -272,63 +278,139 @@
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
-        function createApiKey() {
-            const key = 'ak_live_' + Array.from({length:32},()=>Math.random().toString(36)[2]).join('');
-            apiKeys.push({key, name:'Key '+(apiKeys.length+1), created:new Date().toISOString()});
-            renderApiKeys();
-            document.getElementById('new-api-key-display').textContent = key;
-            document.getElementById('api-key-modal').classList.add('active');
+        async function createApiKey() {
+            const name = window.prompt('Name your API key', 'Integration Key');
+            if (!name) return;
+            try {
+                const data = await ApiClient.post(CONFIG.ENDPOINTS.KEYS, { name });
+                if (!data.success) throw data;
+                await loadApiKeys();
+                if (data.key) {
+                    navigator.clipboard?.writeText(data.key).catch(() => {});
+                    Utils.showToast('New API key created and copied to clipboard.', 'success');
+                    alert('New API key: ' + data.key);
+                } else {
+                    Utils.showToast('API key created.', 'success');
+                }
+            } catch (err) {
+                Utils.showToast(err.message || 'Failed to create API key.', 'error');
+            }
+        }
+
+        async function revokeApiKey(keyId) {
+            if (!confirm('Revoke this API key? This action cannot be undone.')) return;
+            try {
+                const data = await ApiClient.delete(CONFIG.ENDPOINTS.KEYS + '/' + keyId);
+                if (data.success) {
+                    Utils.showToast('API key revoked successfully.', 'info');
+                    await loadApiKeys();
+                } else {
+                    Utils.showToast(data.message || 'Failed to revoke key.', 'error');
+                }
+            } catch (err) {
+                Utils.showToast(err.message || 'Error revoking key.', 'error');
+            }
         }
 
         function renderApiKeys() {
             const c = document.getElementById('api-keys-list');
             if (!apiKeys.length) {
                 c.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="empty-state-title">No API Keys</div><div class="empty-state-text">Create your first API key.</div>';
+                document.getElementById('stat-keys').textContent = '0';
                 return;
             }
-            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>Key</th><th>Created</th><th>Actions</th></tr></thead><tbody>' +
-                apiKeys.map((k,i)=>'<tr><td>'+k.name+'</td><td><code style="font-family:var(--font-mono);font-size:var(--font-size-xs);color:var(--color-text-tertiary);">'+Utils.maskApiKey(k.key)+'</code></td><td>'+Utils.formatDate(k.created)+'</td><td><button class="btn btn-ghost btn-sm" onclick="deleteApiKey('+i+')">Delete</button></td></tr>').join('') +
+            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>Key</th><th>Last Used</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
+                apiKeys.map(k => {
+                    const isActive = !k.revoked;
+                    const statusBadge = isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-rejected">Revoked</span>';
+                    const lastUsed = k.last_used_at ? Utils.formatDate(k.last_used_at) : '<span style="color:var(--color-text-tertiary);font-size:var(--font-size-xs)">Never</span>';
+                    const actions = isActive ? `<button class="btn btn-danger btn-sm" onclick="revokeApiKey('${k.id}')" style="font-size:11px;padding:2px 8px;">Revoke</button>` : '<span style="color:var(--color-text-tertiary);font-size:var(--font-size-xs)">—</span>';
+                    return '<tr>' +
+                        '<td>' + k.name + '</td>' +
+                        '<td><code style="font-family:var(--font-mono);font-size:var(--font-size-xs);color:var(--color-text-tertiary);">' + (k.preview || '••••••••') + '</code></td>' +
+                        '<td style="font-size:var(--font-size-xs)">' + lastUsed + '</td>' +
+                        '<td>' + Utils.formatDate(k.created_at) + '</td>' +
+                        '<td>' + statusBadge + '</td>' +
+                        '<td>' + actions + '</td>' +
+                    '</tr>';
+                }).join('') +
                 '</tbody></table></div>';
             document.getElementById('stat-keys').textContent = apiKeys.length;
         }
 
-        function copyApiKey() {
-            Utils.copyToClipboard(document.getElementById('new-api-key-display').textContent);
-            Utils.showToast('API Key copied!', 'success');
+        async function loadApiKeys() {
+            try {
+                const data = await ApiClient.get(CONFIG.ENDPOINTS.KEYS);
+                if (!data.success) throw data;
+                apiKeys = data.keys || [];
+                renderApiKeys();
+            } catch (err) {
+                Utils.showToast(err.message || 'Failed to load API keys.', 'error');
+            }
         }
 
-        function deleteApiKey(i) {
-            if (confirm('Delete this API key?')) { apiKeys.splice(i,1); renderApiKeys(); Utils.showToast('API Key deleted.','info'); }
+        async function showAddWebsiteModal() {
+            const name = window.prompt('Website name', 'My App');
+            const domain = window.prompt('Website domain', 'https://example.com');
+            if (!domain) return;
+            try {
+                const data = await ApiClient.post(CONFIG.ENDPOINTS.WEBSITES, { name: name || domain, domain });
+                if (!data.success) throw data;
+                await loadWebsites();
+                Utils.showToast('Website connected.', 'success');
+            } catch (err) {
+                Utils.showToast(err.message || 'Failed to connect website.', 'error');
+            }
         }
 
-        function showAddWebsiteModal() { document.getElementById('add-website-modal').classList.add('active'); }
-
-        function addWebsite(e) {
-            e.preventDefault();
-            const url = document.getElementById('website-url').value.trim();
-            const name = document.getElementById('website-name').value.trim() || url;
-            websites.push({url,name,active:true,created:new Date().toISOString()});
-            renderWebsites();
-            closeModal('add-website-modal');
-            document.getElementById('add-website-form').reset();
-            Utils.showToast('Website added!','success');
+        async function loadWebsites() {
+            try {
+                const data = await ApiClient.get(CONFIG.ENDPOINTS.WEBSITES);
+                if (!data.success) throw data;
+                websites = data.websites || [];
+                renderWebsites();
+            } catch (err) {
+                Utils.showToast(err.message || 'Failed to load websites.', 'error');
+            }
         }
 
         function renderWebsites() {
             const c = document.getElementById('websites-list');
             if (!websites.length) {
                 c.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="empty-state-title">No Websites</div><div class="empty-state-text">Add your first website.</div>';
+                document.getElementById('stat-websites').textContent = '0';
                 return;
             }
-            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>URL</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
-                websites.map((w,i)=>'<tr><td>'+w.name+'</td><td><code style="font-size:var(--font-size-xs);">'+w.url+'</code></td><td><span class="badge '+(w.active?'badge-success':'badge-warning')+'">'+(w.active?'Active':'Inactive')+'</span></td><td><button class="btn btn-ghost btn-sm" onclick="toggleWebsite('+i+')">'+(w.active?'Disable':'Enable')+'</button><button class="btn btn-ghost btn-sm" onclick="deleteWebsite('+i+')">Delete</button></td></tr>').join('') +
+            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>URL</th><th>Redirect URL</th><th>Status</th></tr></thead><tbody>' +
+                websites.map(w => {
+                    const isActive = w.active !== false;
+                    const statusBadge = isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-rejected">Inactive</span>';
+                    const redirectHtml = w.redirect_url ? '<code style="font-size:var(--font-size-xs);">' + Utils.escapeHtml(w.redirect_url) + '</code>' : '<span style="color:var(--color-text-tertiary);font-size:var(--font-size-xs)">—</span>';
+                    return '<tr><td>' + Utils.escapeHtml(w.name) + '</td><td><code style="font-size:var(--font-size-xs);">' + Utils.escapeHtml(w.domain) + '</code></td><td style="font-size:var(--font-size-xs)">' + redirectHtml + '</td><td>' + statusBadge + '</td></tr>';
+                }).join('') +
                 '</tbody></table></div>';
             document.getElementById('stat-websites').textContent = websites.length;
         }
 
-        function toggleWebsite(i) { websites[i].active = !websites[i].active; renderWebsites(); }
-        function deleteWebsite(i) { if (confirm('Remove this website?')) { websites.splice(i,1); renderWebsites(); Utils.showToast('Website removed.','info'); }}
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+        async function loadQuotaSummary() {
+            try {
+                const data = await ApiClient.get(CONFIG.ENDPOINTS.PACKAGE_USAGE);
+                if (!data.success) throw data;
+                const pkg = data.package || {};
+                const card = document.getElementById('quota-summary-card');
+                card.innerHTML = `
+                    <div style="display:grid; gap: var(--space-3);">
+                        <div><strong>Current package:</strong> <span class="badge badge-info">${pkg.package || 'free'}</span></div>
+                        <div><strong>Used:</strong> ${pkg.used ?? 0} / ${pkg.limit ?? '∞'}</div>
+                        <div><strong>Remaining:</strong> ${pkg.remaining ?? 'Unlimited'}</div>
+                        <div><strong>Features:</strong> ${Object.entries(pkg.features || {}).filter(([, enabled]) => enabled).map(([name]) => name.replace(/_/g, ' ')).join(', ') || 'Basic access'}</div>
+                    </div>`;
+            } catch (err) {
+                document.getElementById('quota-summary-card').innerHTML = '<div class="empty-state"><div class="empty-state-title">Unable to load quota</div></div>';
+            }
+        }
 
         async function updateProfile(e) {
             e.preventDefault();
@@ -514,6 +596,10 @@
                     loadAdminPending();
                     loadAdminUsers();
                 }
+
+                await loadQuotaSummary();
+                await loadApiKeys();
+                await loadWebsites();
 
             } catch (err) {
                 try {

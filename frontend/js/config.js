@@ -57,6 +57,10 @@ const CONFIG = {
         CHANGE_PASSWORD: '/api/auth/change-password',
         SESSIONS: '/api/auth/me',
         PROVIDERS: '/api/auth/me',
+        KEYS: '/api/keys',
+        WEBSITES: '/api/websites',
+        PACKAGE_USAGE: '/api/package/usage',
+        ADMIN_PACKAGE_USAGE: '/api/admin/package-usage',
     },
 
     APP: {

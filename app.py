@@ -5,6 +5,8 @@ from models import db
 from routes import auth_bp
 from routes_payment import payment_bp
 from middleware import add_cors_headers, log_audit_event
+from services.user_service import UserService
+from models import User
 
 def create_app(config_class=Config, test_config=None):
     # Get the absolute path to the frontend directory

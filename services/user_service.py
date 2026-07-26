@@ -1,6 +1,8 @@
 import re
+from datetime import datetime
 import bcrypt
 from models import db, User
+from services.sanity_service import SanityService
 
 PACKAGE_LIMITS = {
     'free': 100,
@@ -107,6 +109,7 @@ class UserService:
         )
         db.session.add(user)
         db.session.commit()
+        UserService.sync_account_backup(user)
         return user
 
     @staticmethod
@@ -128,6 +131,7 @@ class UserService:
             user.avatar_url = avatar_url
 
         db.session.commit()
+        UserService.sync_account_backup(user)
         return user
 
     @staticmethod
@@ -142,6 +146,7 @@ class UserService:
 
         user.google_sub = google_sub
         db.session.commit()
+        UserService.sync_account_backup(user)
         return user
 
     @staticmethod
@@ -155,6 +160,7 @@ class UserService:
 
         user.google_sub = None
         db.session.commit()
+        UserService.sync_account_backup(user)
         return user
 
     # === ADMIN METHODS ===
@@ -170,8 +176,6 @@ class UserService:
     @staticmethod
     def approve_package(user_id: str, package: str, admin_id: str) -> User:
         """Admin approves a package upgrade for a user."""
-        from datetime import datetime
-
         user = UserService.find_by_id(user_id)
         if not user:
             raise ValueError("User not found.")
@@ -185,6 +189,7 @@ class UserService:
         user.package = package
         user.package_activated_at = datetime.utcnow()
         db.session.commit()
+        UserService.sync_account_backup(user)
 
         # Log audit
         from middleware import log_audit_event
@@ -208,6 +213,93 @@ class UserService:
         })
 
         return user
+
+    @staticmethod
+    def sync_account_backup(user: User) -> None:
+        """Persist a backup snapshot of the user's package/account state to Sanity.
+        Only creates a new backup if the data has actually changed since the last backup.
+        """
+        try:
+            # Check if we already have a backup with the same data to avoid duplicates
+            existing_backups = SanityService.get_account_backups(user_id=user.id)
+            if existing_backups:
+                latest = sorted(
+                    existing_backups,
+                    key=lambda item: item.get('updated_at') or item.get('created_at') or '',
+                    reverse=True
+                )[0]
+                # Skip if nothing changed
+                if (latest.get('package') == user.package and
+                    latest.get('role') == user.role and
+                    latest.get('display_name') == user.display_name and
+                    latest.get('avatar_url') == user.avatar_url):
+                    return
+
+            backup_data = {
+                'user_id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'package': user.package,
+                'package_activated_at': user.package_activated_at.isoformat() if user.package_activated_at else None,
+                'role': user.role,
+                'display_name': user.display_name,
+                'avatar_url': user.avatar_url,
+                'created_at': user.created_at.isoformat(),
+                'updated_at': user.updated_at.isoformat() if user.updated_at else None,
+                'backup_source': 'app',
+            }
+            SanityService.save_account_backup(backup_data)
+        except Exception as exc:
+            print(f"Backup sync failed for user {user.id}: {exc}")
+
+    @staticmethod
+    def restore_account_backup(user_id: str) -> User | None:
+        """Restore the latest backup snapshot for a user from Sanity when local state is missing.
+        Only restores fields that are None/empty in the current user record.
+        """
+        try:
+            user = UserService.find_by_id(user_id)
+            if not user:
+                return None
+
+            # Only restore if current data is missing (e.g., display_name, avatar_url)
+            # This prevents backup from overwriting fresh user data with stale backup data
+            backups = SanityService.get_account_backups(user_id=user_id)
+            if not backups:
+                return None
+
+            latest = sorted(
+                backups,
+                key=lambda item: item.get('updated_at') or item.get('created_at') or '',
+                reverse=True
+            )[0]
+
+            needs_commit = False
+
+            # Only restore fields that are currently None/empty in the user record
+            if not user.display_name and latest.get('display_name') is not None:
+                user.display_name = latest.get('display_name')
+                needs_commit = True
+            if not user.avatar_url and latest.get('avatar_url') is not None:
+                user.avatar_url = latest.get('avatar_url')
+                needs_commit = True
+            # Restore package info only if user has no package_activated_at (fresh account)
+            if not user.package_activated_at and latest.get('package'):
+                user.package = latest.get('package', user.package)
+                if latest.get('package_activated_at'):
+                    user.package_activated_at = datetime.fromisoformat(latest['package_activated_at'])
+                needs_commit = True
+            # Restore role only if user has no role set
+            if not user.role and latest.get('role'):
+                user.role = latest.get('role', user.role)
+                needs_commit = True
+
+            if needs_commit:
+                db.session.commit()
+            return user
+        except Exception as exc:
+            print(f"Backup restore failed for user {user_id}: {exc}")
+            return None
 
     @staticmethod
     def get_pending_requests() -> list:
