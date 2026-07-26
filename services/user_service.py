@@ -12,6 +12,30 @@ PACKAGE_LIMITS = {
     'enterprise': None,
 }
 
+PACKAGE_FEATURES = {
+    'free': {
+        'max_users': 100,
+        'social_login': False,
+        'session_management': False,
+        'audit_logging': False,
+        'priority_support': False,
+    },
+    'pro': {
+        'max_users': 10000,
+        'social_login': True,
+        'session_management': True,
+        'audit_logging': False,
+        'priority_support': True,
+    },
+    'enterprise': {
+        'max_users': None,
+        'social_login': True,
+        'session_management': True,
+        'audit_logging': True,
+        'priority_support': True,
+    },
+}
+
 class UserService:
     @staticmethod
     def normalize_username(username: str) -> str:
@@ -76,6 +100,19 @@ class UserService:
             raise ValueError(f"{(package or 'free').lower()} package has reached its user limit of {limit}.")
 
     @staticmethod
+    def _extract_package_from_backup(backup: dict) -> str:
+        """Extract the package name from a backup document, supporting both old flat format
+        and new rich format with package_quota.current_package."""
+        # New format: package_quota.current_package
+        pkg_quota = backup.get('package_quota', {})
+        if isinstance(pkg_quota, dict) and pkg_quota.get('current_package'):
+            return pkg_quota.get('current_package')
+        # Old format: flat package field
+        if backup.get('package'):
+            return backup.get('package')
+        return None
+
+    @staticmethod
     def create_user(username: str, email: str, password_hash: str = None, google_sub: str = None, avatar_url: str = None, display_name: str = None, package: str = 'free') -> User:
         normalized_username = UserService.normalize_username(username)
         normalized_email = UserService.normalize_email(email)
@@ -92,6 +129,23 @@ class UserService:
 
         if google_sub and UserService.find_by_google_sub(google_sub):
             raise ValueError("Google account already linked.")
+
+        # Check if there's an existing backup for this email (survived redeploy)
+        # If so, restore the package from backup instead of defaulting to 'free'
+        try:
+            backups = SanityService.get_account_backups(email=normalized_email)
+            if backups:
+                latest = sorted(
+                    backups,
+                    key=lambda item: item.get('updated_at') or item.get('created_at') or '',
+                    reverse=True
+                )[0]
+                backup_pkg = UserService._extract_package_from_backup(latest)
+                if backup_pkg and backup_pkg != 'free':
+                    normalized_package = backup_pkg
+                    print(f"[BACKUP] Restored package '{normalized_package}' for new user {normalized_email} from backup")
+        except Exception as exc:
+            print(f"[BACKUP] Failed to check backups for {normalized_email}: {exc}")
 
         UserService.enforce_package_quota(normalized_package)
 
@@ -219,10 +273,13 @@ class UserService:
     @staticmethod
     def _sync_account_backup_sync(user_id: str, username: str, email: str, package: str, package_activated_at: str, role: str, display_name: str, avatar_url: str, created_at: str, updated_at: str) -> None:
         """Persist a backup snapshot of the user's package/account state to Sanity.
+        Uses the rich JSON format from example_json_packup_data/user_json_backup_data.json
+        including package_quota, apikeys, websites, and payment_history.
         Only creates a new backup if the data has actually changed since the last backup.
         Runs synchronously in a background thread - uses only Sanity API, no DB needed.
         """
         try:
+            # Check if data changed by comparing with latest backup (Sanity only, no DB)
             existing_backups = SanityService.get_account_backups(user_id=user_id)
             if existing_backups:
                 latest = sorted(
@@ -230,12 +287,15 @@ class UserService:
                     key=lambda item: item.get('updated_at') or item.get('created_at') or '',
                     reverse=True
                 )[0]
-                if (latest.get('package') == package and
+                # Check if package_quota data changed (supports both formats)
+                latest_pkg = latest.get('package_quota', {}).get('current_package', '') or latest.get('package', '')
+                if (latest_pkg == package and
                     latest.get('role') == role and
                     latest.get('display_name') == display_name and
                     latest.get('avatar_url') == avatar_url):
                     return
 
+            # Build simple backup data first (works without DB context)
             backup_data = {
                 'user_id': user_id,
                 'username': username,
@@ -248,7 +308,55 @@ class UserService:
                 'created_at': created_at,
                 'updated_at': updated_at,
                 'backup_source': 'app',
+                'package_used': 0,
+                'package_remaining': None,
+                'package_features': PACKAGE_FEATURES.get(package, PACKAGE_FEATURES['free']),
+                'apikeys': [],
+                'website_domains': [],
+                'payment_history': [],
             }
+
+            # Try to enrich with DB data if app context is available
+            try:
+                from flask import current_app
+                if current_app:
+                    with current_app.app_context():
+                        from models import ApiKey, Website, Order as OrderModel, User as UserModel
+                        
+                        user = UserService.find_by_id(user_id)
+                        if user:
+                            # Package usage stats
+                            limit = PACKAGE_LIMITS.get(package, 100)
+                            used_count = UserModel.query.filter_by(package=package).count()
+                            backup_data['package_used'] = used_count
+                            backup_data['package_remaining'] = None if limit is None else max(limit - used_count, 0)
+                            
+                            # API keys
+                            keys = ApiKey.query.filter_by(user_id=user_id).order_by(ApiKey.created_at.desc()).all()
+                            backup_data['apikeys'] = [k.to_dict() for k in keys]
+                            
+                            # Website domains
+                            websites = Website.query.filter_by(user_id=user_id, active=True).all()
+                            backup_data['website_domains'] = [w.domain for w in websites]
+                            
+                            # Payment history
+                            orders = OrderModel.query.filter_by(user_id=user_id).order_by(OrderModel.created_at.desc()).all()
+                            backup_data['payment_history'] = [
+                                {
+                                    'order_id': o.id,
+                                    'package': o.package,
+                                    'amount': o.amount,
+                                    'currency': o.currency,
+                                    'status': o.status,
+                                    'payment_proof_url': o.payment_proof_url,
+                                    'created_at': o.created_at.isoformat(),
+                                    'reviewed_at': o.reviewed_at.isoformat() if o.reviewed_at else None,
+                                }
+                                for o in orders
+                            ]
+            except Exception:
+                pass  # Non-critical enrichment, skip if no context
+
             SanityService.save_account_backup(backup_data)
         except Exception as exc:
             print(f"Backup sync failed for user {user_id}: {exc}")
@@ -277,21 +385,23 @@ class UserService:
         thread.start()
 
     @staticmethod
-    def _restore_account_backup_sync(user_id: str) -> None:
+    def restore_account_backup(user_id: str, email: str = None) -> None:
         """Restore the latest backup snapshot for a user from Sanity when local state is missing.
-        Only restores fields that are None/empty in the current user record.
-        Runs synchronously in a background thread.
+        Uses email as the primary lookup key (stable across redeploys) with user_id as fallback.
+        Runs synchronously to ensure data is available immediately after login.
+        Restores all critical fields (package, display_name, avatar_url, role).
         """
         try:
-            from app import app as _flask_app
-            with _flask_app.app_context():
+            from flask import current_app
+            with current_app.app_context():
                 user = UserService.find_by_id(user_id)
                 if not user:
                     return
 
-                backups = SanityService.get_account_backups(user_id=user_id)
+                # Lookup by email first (stable across redeploys), fallback to user_id
+                backups = SanityService.get_account_backups(user_id=user_id, email=email or user.email)
                 if not backups:
-                    return
+                    return user
 
                 latest = sorted(
                     backups,
@@ -301,36 +411,48 @@ class UserService:
 
                 needs_commit = False
 
+                # Restore display_name if missing
                 if not user.display_name and latest.get('display_name') is not None:
                     user.display_name = latest.get('display_name')
                     needs_commit = True
+
+                # Restore avatar_url if missing
                 if not user.avatar_url and latest.get('avatar_url') is not None:
                     user.avatar_url = latest.get('avatar_url')
                     needs_commit = True
-                if not user.package_activated_at and latest.get('package'):
-                    user.package = latest.get('package', user.package)
-                    if latest.get('package_activated_at'):
-                        user.package_activated_at = datetime.fromisoformat(latest['package_activated_at'])
-                    needs_commit = True
+
+                # ALWAYS restore package from backup (supports both old flat and new rich format)
+                # This ensures package upgrades survive redeploy
+                backup_package = UserService._extract_package_from_backup(latest)
+                if backup_package:
+                    package_rank = {"free": 0, "pro": 1, "enterprise": 2}
+                    current_rank = package_rank.get(user.package, 0)
+                    backup_rank = package_rank.get(backup_package, 0)
+                    if backup_rank > current_rank or backup_package != 'free':
+                        user.package = backup_package
+                        # Try to get package_activated_at from both formats
+                        pkg_quota = latest.get('package_quota', {})
+                        activated_at = (pkg_quota.get('package_activated_at') if isinstance(pkg_quota, dict) 
+                                        else latest.get('package_activated_at'))
+                        if activated_at:
+                            try:
+                                user.package_activated_at = datetime.fromisoformat(activated_at)
+                            except (ValueError, TypeError):
+                                pass
+                        needs_commit = True
+
+                # Restore role if missing
                 if not user.role and latest.get('role'):
                     user.role = latest.get('role', user.role)
                     needs_commit = True
 
                 if needs_commit:
                     db.session.commit()
+                    print(f"[BACKUP] Restored account for {user.email} (package: {user.package})")
+            
+            return user
         except Exception as exc:
             print(f"Backup restore failed for user {user_id}: {exc}")
-
-    @staticmethod
-    def restore_account_backup(user_id: str) -> None:
-        """Restore the latest backup snapshot asynchronously in a background thread.
-        This prevents the Sanity API call from blocking the HTTP response."""
-        thread = threading.Thread(
-            target=UserService._restore_account_backup_sync,
-            args=(user_id,),
-            daemon=True
-        )
-        thread.start()
 
     @staticmethod
     def get_pending_requests() -> list:

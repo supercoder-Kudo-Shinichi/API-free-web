@@ -126,29 +126,49 @@ class SanityService:
     def save_account_backup(account_data: dict) -> str:
         """
         Save a backup snapshot of the user's account/package data to Sanity.
+        Uses the rich JSON format from example_json_packup_data/user_json_backup_data.json.
         Falls back to a local JSON backup file when Sanity is unavailable.
         Returns the Sanity document ID or a local backup identifier.
         """
         doc_id = f"account-backup-{uuid.uuid4().hex[:20]}"
+        
+        # Build the rich backup document matching the example JSON format
         doc = {
             "_id": doc_id,
             "_type": "accountBackup",
             "user_id": account_data.get("user_id"),
-            "username": account_data.get("username", ""),
             "email": account_data.get("email", ""),
-            "package": account_data.get("package", "free"),
-            "package_activated_at": account_data.get("package_activated_at"),
-            "role": account_data.get("role", "user"),
+            "username": account_data.get("username", ""),
             "display_name": account_data.get("display_name"),
             "avatar_url": account_data.get("avatar_url"),
+            "role": account_data.get("role", "user"),
+            "package_quota": {
+                "current_package": account_data.get("package", "free"),
+                "package_activated_at": account_data.get("package_activated_at"),
+                "used": account_data.get("package_used", 0),
+                "remaining": account_data.get("package_remaining", None),
+                "features": account_data.get("package_features", {})
+            },
+            "apikeys": account_data.get("apikeys", []),
+            "websites": {
+                "website_connected": account_data.get("website_domains", [])
+            },
+            "payment_history": {
+                "history": account_data.get("payment_history", [])
+            },
             "created_at": account_data.get("created_at", datetime.utcnow().isoformat()),
             "updated_at": account_data.get("updated_at", datetime.utcnow().isoformat()),
             "backup_source": account_data.get("backup_source", "app"),
         }
 
+        # Use email as the primary storage key for cross-redeploy persistence
+        email_key = (account_data.get('email') or '').lower().strip()
+        storage_key = email_key or account_data.get('user_id')
+
         if not SanityService._is_configured():
             store = SanityService._load_local_backup_store()
-            store[account_data.get('user_id')] = doc
+            # Always override with the latest data
+            store[storage_key] = doc
             SanityService._write_local_backup_store(store)
             return f"local:{doc_id}"
 
@@ -161,27 +181,45 @@ class SanityService:
             raise ValueError(f"Failed to save account backup to Sanity: {response.text}")
         except Exception:
             store = SanityService._load_local_backup_store()
-            store[account_data.get('user_id')] = doc
+            # Always override with the latest data
+            store[storage_key] = doc
             SanityService._write_local_backup_store(store)
             return f"local:{doc_id}"
 
     @staticmethod
-    def get_account_backups(user_id: str = None) -> list:
+    def _get_backup_key(user_id: str, email: str = None) -> str:
+        """Determine the storage key for account backups.
+        Uses email as primary key when available (stable across redeploys),
+        falls back to user_id for backwards compatibility."""
+        return email.lower().strip() if email else user_id
+
+    @staticmethod
+    def get_account_backups(user_id: str = None, email: str = None) -> list:
         """Fetch account backup documents from Sanity or local fallback storage.
         
         Args:
             user_id: If provided, only return backups for this specific user.
                      If None, return all backups.
+            email: If provided, use this as the primary lookup key (more stable across redeploys).
         """
+        lookup_key = SanityService._get_backup_key(user_id, email)
+        
         if not SanityService._is_configured():
             store = SanityService._load_local_backup_store()
-            if user_id:
+            # Try email key first, then fall back to user_id
+            doc = store.get(lookup_key)
+            if doc:
+                return [doc]
+            if email and user_id:
                 doc = store.get(user_id)
                 return [doc] if doc else []
             return list(store.values())
 
         try:
-            if user_id:
+            # Query by email first (most stable across redeploys), then by user_id
+            if lookup_key and email:
+                groq = f'*[_type == "accountBackup" && email == "{email.lower().strip()}"] | order(updated_at desc)'
+            elif user_id:
                 groq = f'*[_type == "accountBackup" && user_id == "{user_id}"] | order(updated_at desc)'
             else:
                 groq = '*[_type == "accountBackup"] | order(updated_at desc)'
@@ -190,7 +228,19 @@ class SanityService:
             response = requests.get(url, headers=SanityService._get_headers(), params=params)
             if response.status_code == 200:
                 result = response.json()
-                return result.get("result", [])
+                # If we got results from email lookup, return them
+                result_docs = result.get("result", [])
+                if result_docs:
+                    return result_docs
+                # Fallback: try user_id lookup if email didn't match
+                if email and user_id:
+                    groq = f'*[_type == "accountBackup" && user_id == "{user_id}"] | order(updated_at desc)'
+                    params = {"query": groq}
+                    response = requests.get(url, headers=SanityService._get_headers(), params=params)
+                    if response.status_code == 200:
+                        result = response.json()
+                        return result.get("result", [])
+                return []
             return []
         except Exception:
             return []

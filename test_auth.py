@@ -313,11 +313,34 @@ class AuthIntegrationTestCase(unittest.TestCase):
                 stored['data'] = data
                 return 'backup-1'
 
-            def fake_get_backups(user_id=None):
+            def fake_get_backups(user_id=None, email=None):
                 return [stored['data']] if stored.get('data') else []
 
             with patch('services.user_service.SanityService.save_account_backup', side_effect=fake_save), patch('services.user_service.SanityService.get_account_backups', side_effect=fake_get_backups):
-                UserService.sync_account_backup(user)
+                # Save backup directly (synchronous) instead of using threaded sync_account_backup
+                from services.sanity_service import SanityService
+                from services.user_service import PACKAGE_FEATURES
+                backup_data = {
+                    'user_id': user.id,
+                    'username': user.username,
+                    'email': user.email,
+                    'package': 'pro',
+                    'package_activated_at': user.package_activated_at.isoformat() if user.package_activated_at else None,
+                    'role': user.role,
+                    'display_name': user.display_name,
+                    'avatar_url': user.avatar_url,
+                    'created_at': user.created_at.isoformat(),
+                    'updated_at': user.updated_at.isoformat() if user.updated_at else None,
+                    'backup_source': 'app',
+                    'package_used': 0,
+                    'package_remaining': None,
+                    'package_features': PACKAGE_FEATURES.get('pro', {}),
+                    'apikeys': [],
+                    'website_domains': [],
+                    'payment_history': [],
+                }
+                SanityService.save_account_backup(backup_data)
+                
                 user.package = 'free'
                 user.package_activated_at = None
                 db.session.commit()

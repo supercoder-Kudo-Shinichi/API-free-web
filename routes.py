@@ -134,7 +134,7 @@ def login():
             user = UserService.find_by_username(username_or_email)
 
         if user:
-            UserService.restore_account_backup(user.id)
+            UserService.restore_account_backup(user.id, email=user.email)
 
         if not user or not user.password_hash:
             log_audit_event('LOGIN', 'FAILED', details={"usernameOrEmail": username_or_email, "error": "INVALID_CREDENTIALS"})
@@ -210,7 +210,7 @@ def login_google():
                 )
 
         if user:
-            UserService.restore_account_backup(user.id)
+            UserService.restore_account_backup(user.id, email=user.email)
 
         # === AUTO-ASSIGN ADMIN ROLE (chạy mọi lần đăng nhập) ===
         # Ưu tiên 1: Tạo mới → UserService.create_user() đã xử lý ADMIN_EMAILS
@@ -319,7 +319,7 @@ def me():
     user_id = g.user.get('userId')
     user = UserService.find_by_id(user_id)
     if user:
-        UserService.restore_account_backup(user.id)
+        UserService.restore_account_backup(user.id, email=user.email)
     if not user:
         return jsonify(build_error_response("USER_NOT_FOUND", "User not found.")), 404
     

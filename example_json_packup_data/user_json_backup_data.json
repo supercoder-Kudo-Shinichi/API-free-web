@@ -1,0 +1,53 @@
+{
+  "username": "nguyenvana@gmail.com",
+  "package_quota": {
+    "current_package": "pro",
+    "used": 3,
+    "remaining": 9997,
+    "features": {
+      "max_users": 10000,
+      "social_login": true,
+      "session_management": true,
+      "audit_logging": false,
+      "priority_support": true
+    }
+  },
+  "apikeys": [
+    {
+      "name": "Production Key",
+      "prefix": "ak_live_",
+      "preview": "ak_live_••••a1b2c3",
+      "revoked": false,
+      "created_at": "2026-07-20T10:30:00",
+      "last_used_at": "2026-07-25T08:15:00"
+    },
+    {
+      "name": "Development Key",
+      "prefix": "ak_live_",
+      "preview": "ak_live_••••d4e5f6",
+      "revoked": false,
+      "created_at": "2026-07-22T14:00:00",
+      "last_used_at": null
+    }
+  ],
+  "websites": {
+    "website_connected": [
+      "example.com",
+      "myapp.vercel.app"
+    ]
+  },
+  "payment_history": {
+    "history": [
+      {
+        "order_id": "order-uuid-1",
+        "package": "pro",
+        "amount": 29000,
+        "currency": "VND",
+        "status": "approved",
+        "payment_proof_url": "https://cdn.sanity.io/images/project/production/image-abc123.png",
+        "created_at": "2026-07-20T10:30:00",
+        "reviewed_at": "2026-07-20T12:00:00"
+      }
+    ]
+  }
+}
