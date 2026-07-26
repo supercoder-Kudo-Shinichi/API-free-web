@@ -1,6 +1,8 @@
 import re
+import threading
 from datetime import datetime
 import bcrypt
+from flask import current_app
 from models import db, User
 from services.sanity_service import SanityService
 
@@ -215,91 +217,120 @@ class UserService:
         return user
 
     @staticmethod
-    def sync_account_backup(user: User) -> None:
+    def _sync_account_backup_sync(user_id: str, username: str, email: str, package: str, package_activated_at: str, role: str, display_name: str, avatar_url: str, created_at: str, updated_at: str) -> None:
         """Persist a backup snapshot of the user's package/account state to Sanity.
         Only creates a new backup if the data has actually changed since the last backup.
+        Runs synchronously in a background thread - uses only Sanity API, no DB needed.
         """
         try:
-            # Check if we already have a backup with the same data to avoid duplicates
-            existing_backups = SanityService.get_account_backups(user_id=user.id)
+            existing_backups = SanityService.get_account_backups(user_id=user_id)
             if existing_backups:
                 latest = sorted(
                     existing_backups,
                     key=lambda item: item.get('updated_at') or item.get('created_at') or '',
                     reverse=True
                 )[0]
-                # Skip if nothing changed
-                if (latest.get('package') == user.package and
-                    latest.get('role') == user.role and
-                    latest.get('display_name') == user.display_name and
-                    latest.get('avatar_url') == user.avatar_url):
+                if (latest.get('package') == package and
+                    latest.get('role') == role and
+                    latest.get('display_name') == display_name and
+                    latest.get('avatar_url') == avatar_url):
                     return
 
             backup_data = {
-                'user_id': user.id,
-                'username': user.username,
-                'email': user.email,
-                'package': user.package,
-                'package_activated_at': user.package_activated_at.isoformat() if user.package_activated_at else None,
-                'role': user.role,
-                'display_name': user.display_name,
-                'avatar_url': user.avatar_url,
-                'created_at': user.created_at.isoformat(),
-                'updated_at': user.updated_at.isoformat() if user.updated_at else None,
+                'user_id': user_id,
+                'username': username,
+                'email': email,
+                'package': package,
+                'package_activated_at': package_activated_at,
+                'role': role,
+                'display_name': display_name,
+                'avatar_url': avatar_url,
+                'created_at': created_at,
+                'updated_at': updated_at,
                 'backup_source': 'app',
             }
             SanityService.save_account_backup(backup_data)
         except Exception as exc:
-            print(f"Backup sync failed for user {user.id}: {exc}")
+            print(f"Backup sync failed for user {user_id}: {exc}")
 
     @staticmethod
-    def restore_account_backup(user_id: str) -> User | None:
+    def sync_account_backup(user: User) -> None:
+        """Persist a backup snapshot asynchronously in a background thread.
+        This prevents the Sanity API call from blocking the HTTP response."""
+        # Extract all needed data from user object before threading
+        thread = threading.Thread(
+            target=UserService._sync_account_backup_sync,
+            args=(
+                user.id,
+                user.username,
+                user.email,
+                user.package,
+                user.package_activated_at.isoformat() if user.package_activated_at else None,
+                user.role,
+                user.display_name,
+                user.avatar_url,
+                user.created_at.isoformat(),
+                user.updated_at.isoformat() if user.updated_at else None,
+            ),
+            daemon=True
+        )
+        thread.start()
+
+    @staticmethod
+    def _restore_account_backup_sync(user_id: str) -> None:
         """Restore the latest backup snapshot for a user from Sanity when local state is missing.
         Only restores fields that are None/empty in the current user record.
+        Runs synchronously in a background thread.
         """
         try:
-            user = UserService.find_by_id(user_id)
-            if not user:
-                return None
+            from app import app as _flask_app
+            with _flask_app.app_context():
+                user = UserService.find_by_id(user_id)
+                if not user:
+                    return
 
-            # Only restore if current data is missing (e.g., display_name, avatar_url)
-            # This prevents backup from overwriting fresh user data with stale backup data
-            backups = SanityService.get_account_backups(user_id=user_id)
-            if not backups:
-                return None
+                backups = SanityService.get_account_backups(user_id=user_id)
+                if not backups:
+                    return
 
-            latest = sorted(
-                backups,
-                key=lambda item: item.get('updated_at') or item.get('created_at') or '',
-                reverse=True
-            )[0]
+                latest = sorted(
+                    backups,
+                    key=lambda item: item.get('updated_at') or item.get('created_at') or '',
+                    reverse=True
+                )[0]
 
-            needs_commit = False
+                needs_commit = False
 
-            # Only restore fields that are currently None/empty in the user record
-            if not user.display_name and latest.get('display_name') is not None:
-                user.display_name = latest.get('display_name')
-                needs_commit = True
-            if not user.avatar_url and latest.get('avatar_url') is not None:
-                user.avatar_url = latest.get('avatar_url')
-                needs_commit = True
-            # Restore package info only if user has no package_activated_at (fresh account)
-            if not user.package_activated_at and latest.get('package'):
-                user.package = latest.get('package', user.package)
-                if latest.get('package_activated_at'):
-                    user.package_activated_at = datetime.fromisoformat(latest['package_activated_at'])
-                needs_commit = True
-            # Restore role only if user has no role set
-            if not user.role and latest.get('role'):
-                user.role = latest.get('role', user.role)
-                needs_commit = True
+                if not user.display_name and latest.get('display_name') is not None:
+                    user.display_name = latest.get('display_name')
+                    needs_commit = True
+                if not user.avatar_url and latest.get('avatar_url') is not None:
+                    user.avatar_url = latest.get('avatar_url')
+                    needs_commit = True
+                if not user.package_activated_at and latest.get('package'):
+                    user.package = latest.get('package', user.package)
+                    if latest.get('package_activated_at'):
+                        user.package_activated_at = datetime.fromisoformat(latest['package_activated_at'])
+                    needs_commit = True
+                if not user.role and latest.get('role'):
+                    user.role = latest.get('role', user.role)
+                    needs_commit = True
 
-            if needs_commit:
-                db.session.commit()
-            return user
+                if needs_commit:
+                    db.session.commit()
         except Exception as exc:
             print(f"Backup restore failed for user {user_id}: {exc}")
-            return None
+
+    @staticmethod
+    def restore_account_backup(user_id: str) -> None:
+        """Restore the latest backup snapshot asynchronously in a background thread.
+        This prevents the Sanity API call from blocking the HTTP response."""
+        thread = threading.Thread(
+            target=UserService._restore_account_backup_sync,
+            args=(user_id,),
+            daemon=True
+        )
+        thread.start()
 
     @staticmethod
     def get_pending_requests() -> list:

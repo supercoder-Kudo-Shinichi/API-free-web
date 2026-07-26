@@ -3,9 +3,11 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from config import Config
 
+import threading
+
 class EmailService:
     @staticmethod
-    def send_welcome_email(email: str, username: str, created_at, ip_address: str = None, user_agent: str = None) -> None:
+    def _send_welcome_email_sync(email: str, username: str, created_at, ip_address: str = None, user_agent: str = None) -> None:
         creation_time = created_at.strftime("%a, %d %b %Y %H:%M:%S GMT")
         ip = ip_address or "Unknown IP"
         device = user_agent or "Unknown Device"
@@ -165,3 +167,15 @@ class EmailService:
             print(f"Subject: Welcome to Clerk Clone - Account Created Successfully")
             print(f"Content HTML:\n{html_content}")
             print("============================================")
+
+    @staticmethod
+    def send_welcome_email(email: str, username: str, created_at, ip_address: str = None, user_agent: str = None) -> None:
+        """Send welcome email asynchronously in a background thread.
+        This prevents the email sending from blocking the HTTP response."""
+        thread = threading.Thread(
+            target=EmailService._send_welcome_email_sync,
+            args=(email, username, created_at),
+            kwargs={"ip_address": ip_address, "user_agent": user_agent},
+            daemon=True
+        )
+        thread.start()

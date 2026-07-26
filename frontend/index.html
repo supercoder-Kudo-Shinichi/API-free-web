@@ -178,6 +178,38 @@
         </div>
     </section>
 
+    <!-- Donate -->
+    <section class="donate" id="donate">
+        <div class="container">
+            <div class="section-header reveal">
+                <span class="section-label">Donate</span>
+                <h2 class="section-title">Ủng Hộ Dự Án</h2>
+                <p class="section-description">Nếu bạn thấy AuthGuard hữu ích, hãy ủng hộ chúng tôi một ly cà phê để tiếp tục phát triển nhé! ☕</p>
+            </div>
+            <div class="donate-grid reveal">
+                <button class="donate-btn" data-amount="5000" onclick="selectDonate(this)">5,000₫</button>
+                <button class="donate-btn" data-amount="10000" onclick="selectDonate(this)">10,000₫</button>
+                <button class="donate-btn" data-amount="15000" onclick="selectDonate(this)">15,000₫</button>
+                <button class="donate-btn" data-amount="20000" onclick="selectDonate(this)">20,000₫</button>
+                <button class="donate-btn" data-amount="25000" onclick="selectDonate(this)">25,000₫</button>
+                <button class="donate-btn" data-amount="50000" onclick="selectDonate(this)">50,000₫</button>
+                <button class="donate-btn" data-amount="100000" onclick="selectDonate(this)">100,000₫</button>
+                <button class="donate-btn" data-amount="200000" onclick="selectDonate(this)">200,000₫</button>
+                <button class="donate-btn" data-amount="500000" onclick="selectDonate(this)">500,000₫</button>
+                <button class="donate-btn" data-amount="1000000" onclick="selectDonate(this)">1,000,000₫</button>
+                <button class="donate-btn" data-amount="2000000" onclick="selectDonate(this)">2,000,000₫</button>
+                <button class="donate-btn" data-amount="5000000" onclick="selectDonate(this)">5,000,000₫</button>
+            </div>
+            <div class="donate-footer reveal">
+                <p>Chọn mệnh giá và bấm nút bên dưới để tiến hành ủng hộ</p>
+                <button class="btn btn-primary btn-lg donate-now-btn" onclick="goDonate()" disabled>
+                    <span>Donate ngay</span>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
     <!-- FAQ -->
     <section class="faq" id="faq">
         <div class="container">
@@ -249,11 +281,52 @@
         </div>
     </footer>
 
+    <!-- QR Modal -->
+    <div id="qr-modal" class="qr-modal" onclick="closeQRModal()" style="display:none;">
+        <div class="qr-modal-content" onclick="event.stopPropagation()">
+            <button class="qr-modal-close" onclick="closeQRModal()">&times;</button>
+            <img id="qr-modal-img" src="" alt="QR Code full size">
+        </div>
+    </div>
+
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/landing.js"></script>
     <script src="js/nav.js"></script>
+    <script>
+        function openQRModal(src) {
+            document.getElementById('qr-modal-img').src = src;
+            document.getElementById('qr-modal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+        function closeQRModal() {
+            document.getElementById('qr-modal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeQRModal();
+        });
+
+        // Donate selection
+        let selectedDonateAmount = null;
+
+        function selectDonate(btn) {
+            // Remove selected from all buttons
+            document.querySelectorAll('.donate-btn').forEach(b => b.classList.remove('donate-btn-selected'));
+            // Add selected to clicked button
+            btn.classList.add('donate-btn-selected');
+            // Store amount
+            selectedDonateAmount = parseInt(btn.getAttribute('data-amount'));
+            // Enable donate button
+            document.querySelector('.donate-now-btn').disabled = false;
+        }
+
+        function goDonate() {
+            if (!selectedDonateAmount) return;
+            window.location.href = 'donate.html?amount=' + selectedDonateAmount;
+        }
+    </script>
 </body>
 </html>
