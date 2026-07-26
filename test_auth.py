@@ -249,7 +249,33 @@ class AuthIntegrationTestCase(unittest.TestCase):
         self.assertEqual(res2.get_json()['code'], "EMAIL_EXISTS")
         print("[OK] Duplicate email block works perfectly")
 
-    # 6. TEST RATE LIMITER
+    # 6. TEST PACKAGE LIMITS
+    def test_package_user_limit_is_enforced(self):
+        print("\n--- Testing Package User Limit ---")
+        with self.app.app_context():
+            for i in range(100):
+                UserService.create_user(
+                    username=f"freeuser{i}",
+                    email=f"freeuser{i}@gmail.com",
+                    password_hash="hashed",
+                    package='free'
+                )
+
+            with self.assertRaises(ValueError):
+                UserService.create_user(
+                    username="freeuser101",
+                    email="freeuser101@gmail.com",
+                    password_hash="hashed",
+                    package='free'
+                )
+        print("[OK] Free package user limit enforced")
+
+    def test_google_client_id_has_default_value(self):
+        import config
+        self.assertTrue(config.Config.GOOGLE_CLIENT_ID)
+        print("[OK] Google client ID is configured by default")
+
+    # 7. TEST RATE LIMITER
     def test_rate_limiter(self):
         print("\n--- Testing Rate Limiter & Brute-force Block ---")
 

@@ -2,6 +2,12 @@ import re
 import bcrypt
 from models import db, User
 
+PACKAGE_LIMITS = {
+    'free': 100,
+    'pro': 10000,
+    'enterprise': None,
+}
+
 class UserService:
     @staticmethod
     def normalize_username(username: str) -> str:
@@ -51,9 +57,28 @@ class UserService:
         return query.first() is not None
 
     @staticmethod
-    def create_user(username: str, email: str, password_hash: str = None, google_sub: str = None, avatar_url: str = None, display_name: str = None) -> User:
+    def get_package_limit(package: str) -> int | None:
+        normalized_package = (package or 'free').lower()
+        return PACKAGE_LIMITS.get(normalized_package)
+
+    @staticmethod
+    def enforce_package_quota(package: str) -> None:
+        limit = UserService.get_package_limit(package)
+        if limit is None:
+            return
+
+        current_count = User.query.filter_by(package=(package or 'free').lower()).count()
+        if current_count >= limit:
+            raise ValueError(f"{(package or 'free').lower()} package has reached its user limit of {limit}.")
+
+    @staticmethod
+    def create_user(username: str, email: str, password_hash: str = None, google_sub: str = None, avatar_url: str = None, display_name: str = None, package: str = 'free') -> User:
         normalized_username = UserService.normalize_username(username)
         normalized_email = UserService.normalize_email(email)
+        normalized_package = (package or 'free').lower()
+
+        if normalized_package not in PACKAGE_LIMITS:
+            raise ValueError("Invalid package.")
 
         if UserService.check_username_exists(normalized_username):
             raise ValueError("Username already exists.")
@@ -63,6 +88,8 @@ class UserService:
 
         if google_sub and UserService.find_by_google_sub(google_sub):
             raise ValueError("Google account already linked.")
+
+        UserService.enforce_package_quota(normalized_package)
 
         # Admin email detection (auto-assign admin role)
         ADMIN_EMAILS = ['soladzpro@gmail.com']
@@ -75,7 +102,8 @@ class UserService:
             google_sub=google_sub,
             avatar_url=avatar_url,
             display_name=display_name,
-            role=role
+            role=role,
+            package=normalized_package,
         )
         db.session.add(user)
         db.session.commit()
@@ -151,6 +179,8 @@ class UserService:
         valid_packages = ['pro', 'enterprise']
         if package not in valid_packages:
             raise ValueError(f"Invalid package. Valid: {', '.join(valid_packages)}")
+
+        UserService.enforce_package_quota(package)
 
         user.package = package
         user.package_activated_at = datetime.utcnow()

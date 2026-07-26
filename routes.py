@@ -1,4 +1,5 @@
 import re
+from datetime import datetime
 import bcrypt
 from flask import Blueprint, request, jsonify, make_response, g
 from models import db
@@ -78,7 +79,8 @@ def register():
         user = UserService.create_user(
             username=username,
             email=email,
-            password_hash=password_hash
+            password_hash=password_hash,
+            package='free'
         )
 
         # Issue session & tokens
@@ -201,7 +203,8 @@ def login_google():
                     email=google_info['email'],
                     google_sub=google_info['sub'],
                     display_name=google_info['display_name'],
-                    avatar_url=google_info['avatar_url']
+                    avatar_url=google_info['avatar_url'],
+                    package='free'
                 )
 
         # === AUTO-ASSIGN ADMIN ROLE (chạy mọi lần đăng nhập) ===
@@ -329,16 +332,41 @@ def me():
 # 8. VERIFY SESSION
 @auth_bp.route('/verify', methods=['POST'])
 def verify_session():
-    refresh_token = request.cookies.get('refresh_token') or (request.get_json() or {}).get('refreshToken')
+    data = request.get_json() or {}
+    refresh_token = request.cookies.get('refresh_token') or data.get('refreshToken')
+    auth_header = request.headers.get('Authorization', '')
+
+    if auth_header.startswith('Bearer '):
+        token = auth_header.split(' ', 1)[1]
+        try:
+            payload = TokenService.verify_access_token(token)
+            user = UserService.find_by_id(payload.get('userId'))
+            if not user:
+                raise ValueError('User not found.')
+
+            expires_at = payload.get('exp')
+            if isinstance(expires_at, (int, float)):
+                expires_at = datetime.fromtimestamp(expires_at).isoformat()
+
+            return jsonify({
+                "success": True,
+                "valid": True,
+                "tokenType": "access",
+                "expiresAt": expires_at,
+                "user": user.to_dict()
+            }), 200
+        except Exception as e:
+            return jsonify({"success": False, "valid": False, "code": "TOKEN_INVALID", "message": str(e)}), 401
 
     if not refresh_token:
-        return jsonify({"success": False, "code": "MISSING_TOKEN", "message": "Session token is required."}), 400
+        return jsonify({"success": False, "valid": False, "code": "MISSING_TOKEN", "message": "Session token is required."}), 400
 
     try:
         session = TokenService.validate_session(refresh_token)
         return jsonify({
             "success": True,
             "valid": True,
+            "tokenType": "refresh",
             "expiresAt": session.expires_at.isoformat(),
             "user": session.user.to_dict()
         }), 200

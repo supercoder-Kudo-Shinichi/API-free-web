@@ -44,7 +44,7 @@ class Config:
     JWT_ACCESS_EXPIRES_IN_MINUTES = 15
     JWT_REFRESH_EXPIRES_IN_DAYS = 7
 
-    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+    GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "648734465354-641229rk3kehq9rhmc10lfhcticrf2hr.apps.googleusercontent.com")
     GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET", "")
 
     SMTP_HOST = os.getenv("SMTP_HOST", "smtp.mailtrap.io")
