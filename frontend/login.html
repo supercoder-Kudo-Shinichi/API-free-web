@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sign In - AuthGuard</title>
+    <title>Sign In - Chat chít</title>
     <meta name="description" content="Sign in to your AuthGuard account.">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/themes.css">
 </head>
 <body>
     <div class="auth-page">
@@ -16,7 +17,7 @@
             <div class="auth-header">
                 <a href="index.html" class="auth-logo">
                     <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
-                    <span>AuthGuard</span>
+                    <span>Chat chít</span>
                 </a>
                 <h1 class="auth-title">Welcome back</h1>
                 <p class="auth-subtitle">Sign in to your account to continue.</p>
@@ -149,7 +150,7 @@
                 const data = await Auth.googleLogin(response.credential);
                 if (data.success) {
                     Utils.showToast('Signed in with Google! Redirecting...', 'success');
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
                 }
             } catch (err) {
                 btn.innerHTML = originalContent;
@@ -192,7 +193,7 @@
                 if (data.success) {
                     Utils.showToast('Login successful! Redirecting...', 'success');
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'index.html';
                     }, 1000);
                 }
             } catch (err) {
@@ -206,11 +207,12 @@
 
         Auth.init().then(authenticated => {
             if (authenticated) {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'index.html';
                 return;
             }
             initGoogleSignIn();
         });
     </script>
+    <script src="js/themes.js"></script>
 </body>
 </html>

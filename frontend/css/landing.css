@@ -9,7 +9,7 @@
     left: 0;
     right: 0;
     z-index: 100;
-    background: rgba(10, 10, 15, 0.8);
+    background: color-mix(in srgb, var(--color-bg) 85%, transparent);
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--color-border);
     transition: all var(--transition-base);
@@ -153,10 +153,12 @@
 
 .hero-content {
     position: relative;
-    text-align: center;
+    text-align: left;
     max-width: 800px;
+    width: 100%;
     padding: 0 var(--space-6);
     animation: fadeInUp 0.8s ease;
+    margin: 0 auto;
 }
 
 .hero-badge {
@@ -165,7 +167,7 @@
     gap: var(--space-2);
     padding: 6px 16px;
     background: var(--color-primary-bg);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    border: 1px solid var(--color-border);
     border-radius: 100px;
     font-size: var(--font-size-sm);
     color: var(--color-primary-light);
@@ -178,20 +180,21 @@
     line-height: 1.1;
     margin-bottom: var(--space-6);
     letter-spacing: -0.02em;
+    color: var(--color-text);
 }
 
 .hero-description {
     font-size: var(--font-size-lg);
     color: var(--color-text-secondary);
     max-width: 600px;
-    margin: 0 auto var(--space-8);
+    margin: 0 0 var(--space-8);
     line-height: 1.7;
 }
 
 .hero-actions {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: var(--space-4);
     flex-wrap: wrap;
 }
@@ -199,7 +202,7 @@
 .hero-stats {
     display: flex;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: var(--space-12);
     margin-top: var(--space-16);
     padding-top: var(--space-8);
@@ -207,7 +210,7 @@
 }
 
 .hero-stat {
-    text-align: center;
+    text-align: left;
 }
 
 .hero-stat-number {
@@ -994,7 +997,7 @@
         top: var(--header-height);
         left: 0;
         right: 0;
-        background: var(--color-bg);
+        background: color-mix(in srgb, var(--color-bg) 98%, transparent);
         border-bottom: 1px solid var(--color-border);
         padding: var(--space-4);
         gap: var(--space-4);

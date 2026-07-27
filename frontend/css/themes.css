@@ -1,0 +1,680 @@
+/* ==========================================
+   THEME SYSTEM - 14 Pastel Color Schemes
+   Đồng bộ navbar, sidebar với màu pastel theme
+   ========================================== */
+
+/* === Theme Variables (applied via [data-theme] attribute) === */
+
+/* Theme 1: Pastel Blue (122, 181, 240) - Mặc định */
+[data-theme="blue"] {
+    --color-primary: #7ab5f0;
+    --color-primary-dark: #4a8fd4;
+    --color-primary-light: #b0d4ff;
+    --color-primary-bg: rgba(122, 181, 240, 0.12);
+    --color-bg: #0a0a0f;
+    --color-bg-secondary: #12121a;
+    --color-bg-tertiary: #1a1a25;
+    --color-bg-card: #1e1e2d;
+    --color-bg-input: #151520;
+    --color-text: #f1f1f7;
+    --color-text-secondary: #b8b8d0;
+    --color-text-tertiary: #7a7a90;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(122, 181, 240, 0.18);
+    --color-navbar-bg: color-mix(in srgb, #7ab5f0 15%, #0a0a0f);
+    --color-navbar-text: #f1f1f7;
+    --color-navbar-text-secondary: #b8b8d0;
+    --color-nav-active: color-mix(in srgb, #7ab5f0 20%, transparent);
+    --color-btn-text: #ffffff;
+    --theme-name: "Xanh dương pastel";
+}
+
+/* Theme 2: Pastel Green (126, 207, 122) */
+[data-theme="darkgreen"] {
+    --color-primary: #7ecf7a;
+    --color-primary-dark: #4a9e46;
+    --color-primary-light: #a8e8a5;
+    --color-primary-bg: rgba(126, 207, 122, 0.12);
+    --color-bg: #070a04;
+    --color-bg-secondary: #0c1208;
+    --color-bg-tertiary: #121a0c;
+    --color-bg-card: #162210;
+    --color-bg-input: #0d1409;
+    --color-text: #e8f0e0;
+    --color-text-secondary: #b8d8a8;
+    --color-text-tertiary: #7aa860;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(126, 207, 122, 0.25);
+    --color-navbar-bg: color-mix(in srgb, #7ecf7a 15%, #070a04);
+    --color-navbar-text: #e8f0e0;
+    --color-navbar-text-secondary: #b8d8a8;
+    --color-nav-active: color-mix(in srgb, #7ecf7a 20%, transparent);
+    --color-btn-text: #ffffff;
+    --theme-name: "Xanh lá pastel";
+}
+
+/* Theme 3: Pastel Yellow-Green (197, 217, 117) */
+[data-theme="yellowgreen"] {
+    --color-primary: #c5d975;
+    --color-primary-dark: #8fa535;
+    --color-primary-light: #dce8a0;
+    --color-primary-bg: rgba(197, 217, 117, 0.12);
+    --color-bg: #0e0f08;
+    --color-bg-secondary: #16170e;
+    --color-bg-tertiary: #1e2014;
+    --color-bg-card: #232618;
+    --color-bg-input: #181a10;
+    --color-text: #f5f7e8;
+    --color-text-secondary: #d0dca0;
+    --color-text-tertiary: #9aaa60;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(197, 217, 117, 0.22);
+    --color-navbar-bg: color-mix(in srgb, #c5d975 15%, #0e0f08);
+    --color-navbar-text: #f5f7e8;
+    --color-navbar-text-secondary: #d0dca0;
+    --color-nav-active: color-mix(in srgb, #c5d975 20%, transparent);
+    --color-btn-text: #1a1a1a;
+    --theme-name: "Vàng xanh pastel";
+}
+
+/* Theme 4: Pastel Light Green (212, 230, 160) */
+[data-theme="lightgreen"] {
+    --color-primary: #d4e6a0;
+    --color-primary-dark: #9cb86a;
+    --color-primary-light: #e8f0c0;
+    --color-primary-bg: rgba(212, 230, 160, 0.12);
+    --color-bg: #0a0b07;
+    --color-bg-secondary: #12140e;
+    --color-bg-tertiary: #1a1d14;
+    --color-bg-card: #1f2318;
+    --color-bg-input: #151810;
+    --color-text: #f4f7ec;
+    --color-text-secondary: #d0e0a8;
+    --color-text-tertiary: #9ab070;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(212, 230, 160, 0.22);
+    --color-navbar-bg: color-mix(in srgb, #d4e6a0 15%, #0a0b07);
+    --color-navbar-text: #f4f7ec;
+    --color-navbar-text-secondary: #d0e0a8;
+    --color-nav-active: color-mix(in srgb, #d4e6a0 20%, transparent);
+    --color-btn-text: #1a1a1a;
+    --theme-name: "Xanh lá nhạt pastel";
+}
+
+/* Theme 5: Pastel Olive (168, 196, 138) */
+[data-theme="olive"] {
+    --color-primary: #a8c48a;
+    --color-primary-dark: #6a804f;
+    --color-primary-light: #c8dca8;
+    --color-primary-bg: rgba(168, 196, 138, 0.12);
+    --color-bg: #080906;
+    --color-bg-secondary: #10120c;
+    --color-bg-tertiary: #181b14;
+    --color-bg-card: #1d2118;
+    --color-bg-input: #131610;
+    --color-text: #f0f3ea;
+    --color-text-secondary: #b8ca98;
+    --color-text-tertiary: #7a9060;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(168, 196, 138, 0.22);
+    --color-navbar-bg: color-mix(in srgb, #a8c48a 15%, #080906);
+    --color-navbar-text: #f0f3ea;
+    --color-navbar-text-secondary: #b8ca98;
+    --color-nav-active: color-mix(in srgb, #a8c48a 20%, transparent);
+    --color-btn-text: #ffffff;
+    --theme-name: "Ô liu pastel";
+}
+
+/* Theme 6: Black (với primary pastel trắng + navbar xám pastel) */
+[data-theme="black"] {
+    --color-primary: #ffffff;
+    --color-primary-dark: #c0c0c0;
+    --color-primary-light: #ffffff;
+    --color-primary-bg: rgba(255, 255, 255, 0.08);
+    --color-bg: #000000;
+    --color-bg-secondary: #050505;
+    --color-bg-tertiary: #0a0a0a;
+    --color-bg-card: #0d0d0d;
+    --color-bg-input: #080808;
+    --color-text: #ffffff;
+    --color-text-secondary: #c0c0c0;
+    --color-text-tertiary: #808080;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(255, 255, 255, 0.06);
+    --color-navbar-bg: #141414;
+    --color-navbar-text: #ffffff;
+    --color-navbar-text-secondary: #c0c0c0;
+    --color-nav-active: rgba(255, 255, 255, 0.08);
+    --color-btn-text: #000000;
+    --theme-name: "Đen";
+}
+
+/* Theme 7: White (với pastel tint cho navbar) */
+[data-theme="white"] {
+    --color-primary: #6a6a8a;
+    --color-primary-dark: #3a3a5a;
+    --color-primary-light: #9a9aba;
+    --color-primary-bg: rgba(106, 106, 138, 0.08);
+    --color-bg: #ffffff;
+    --color-bg-secondary: #f7f7fa;
+    --color-bg-tertiary: #eeeeF2;
+    --color-bg-card: #fafafa;
+    --color-bg-input: #f4f4f7;
+    --color-text: #1a1a2e;
+    --color-text-secondary: #5a5a70;
+    --color-text-tertiary: #9090a8;
+    --color-border: rgba(0, 0, 0, 0.08);
+    --color-border-hover: rgba(0, 0, 0, 0.15);
+    --shadow-glow: 0 0 30px rgba(106, 106, 138, 0.10);
+    --color-navbar-bg: #f0f0f5;
+    --color-navbar-text: #1a1a2e;
+    --color-navbar-text-secondary: #5a5a70;
+    --color-nav-active: rgba(106, 106, 138, 0.10);
+    --color-btn-text: #ffffff;
+    --theme-name: "Trắng";
+}
+
+/* === THEME 8-14: BỔ SUNG === */
+
+/* Theme 8: Sky Blue (184, 225, 255) */
+[data-theme="skyblue"] {
+    --color-primary: #b8e1ff;
+    --color-primary-dark: #8ec6f0;
+    --color-primary-light: #d4edff;
+    --color-primary-bg: rgba(184, 225, 255, 0.12);
+    --color-bg: #080a0d;
+    --color-bg-secondary: #0e1115;
+    --color-bg-tertiary: #14181e;
+    --color-bg-card: #191e25;
+    --color-bg-input: #101418;
+    --color-text: #f0f4f8;
+    --color-text-secondary: #b8d0e0;
+    --color-text-tertiary: #7a90a5;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(184, 225, 255, 0.20);
+    --color-navbar-bg: color-mix(in srgb, #b8e1ff 15%, #080a0d);
+    --color-navbar-text: #f0f4f8;
+    --color-navbar-text-secondary: #b8d0e0;
+    --color-nav-active: color-mix(in srgb, #b8e1ff 20%, transparent);
+    --color-btn-text: #1a1a2e;
+    --theme-name: "Xanh bầu trời";
+}
+
+/* Theme 9: Rose/Pink (233, 141, 158) */
+[data-theme="rose"] {
+    --color-primary: #e98d9e;
+    --color-primary-dark: #d46a7e;
+    --color-primary-light: #f4b0bd;
+    --color-primary-bg: rgba(233, 141, 158, 0.12);
+    --color-bg: #0d0809;
+    --color-bg-secondary: #140e10;
+    --color-bg-tertiary: #1c1416;
+    --color-bg-card: #22191c;
+    --color-bg-input: #161012;
+    --color-text: #f5ecee;
+    --color-text-secondary: #d8b0b8;
+    --color-text-tertiary: #9a707a;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(233, 141, 158, 0.22);
+    --color-navbar-bg: color-mix(in srgb, #e98d9e 15%, #0d0809);
+    --color-navbar-text: #f5ecee;
+    --color-navbar-text-secondary: #d8b0b8;
+    --color-nav-active: color-mix(in srgb, #e98d9e 20%, transparent);
+    --color-btn-text: #ffffff;
+    --theme-name: "Hồng";
+}
+
+/* Theme 10: Blush (255, 220, 227) */
+[data-theme="blush"] {
+    --color-primary: #ffdce3;
+    --color-primary-dark: #f0b8c4;
+    --color-primary-light: #ffeef2;
+    --color-primary-bg: rgba(255, 220, 227, 0.12);
+    --color-bg: #0e0a0b;
+    --color-bg-secondary: #151012;
+    --color-bg-tertiary: #1d1619;
+    --color-bg-card: #231b1f;
+    --color-bg-input: #171214;
+    --color-text: #f5edef;
+    --color-text-secondary: #dbbcc2;
+    --color-text-tertiary: #9a7a82;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(255, 220, 227, 0.20);
+    --color-navbar-bg: color-mix(in srgb, #ffdce3 15%, #0e0a0b);
+    --color-navbar-text: #f5edef;
+    --color-navbar-text-secondary: #dbbcc2;
+    --color-nav-active: color-mix(in srgb, #ffdce3 20%, transparent);
+    --color-btn-text: #1a1a2e;
+    --theme-name: "Hồng phấn";
+}
+
+/* Theme 11: Beige (238, 220, 206) */
+[data-theme="beige"] {
+    --color-primary: #eedcce;
+    --color-primary-dark: #d4c0ae;
+    --color-primary-light: #f5ebe2;
+    --color-primary-bg: rgba(238, 220, 206, 0.12);
+    --color-bg: #0c0a09;
+    --color-bg-secondary: #131110;
+    --color-bg-tertiary: #1b1816;
+    --color-bg-card: #211e1c;
+    --color-bg-input: #151312;
+    --color-text: #f2efec;
+    --color-text-secondary: #d0c4b8;
+    --color-text-tertiary: #90847a;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(238, 220, 206, 0.20);
+    --color-navbar-bg: color-mix(in srgb, #eedcce 15%, #0c0a09);
+    --color-navbar-text: #f2efec;
+    --color-navbar-text-secondary: #d0c4b8;
+    --color-nav-active: color-mix(in srgb, #eedcce 20%, transparent);
+    --color-btn-text: #1a1a2e;
+    --theme-name: "Be";
+}
+
+/* Theme 12: Steel Blue (88, 131, 173) */
+[data-theme="steelblue"] {
+    --color-primary: #5883ad;
+    --color-primary-dark: #3d5f80;
+    --color-primary-light: #7da3c7;
+    --color-primary-bg: rgba(88, 131, 173, 0.12);
+    --color-bg: #080a0c;
+    --color-bg-secondary: #0e1115;
+    --color-bg-tertiary: #15181e;
+    --color-bg-card: #1a1e25;
+    --color-bg-input: #101317;
+    --color-text: #eef0f4;
+    --color-text-secondary: #b0bcc8;
+    --color-text-tertiary: #708090;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(88, 131, 173, 0.20);
+    --color-navbar-bg: color-mix(in srgb, #5883ad 15%, #080a0c);
+    --color-navbar-text: #eef0f4;
+    --color-navbar-text-secondary: #b0bcc8;
+    --color-nav-active: color-mix(in srgb, #5883ad 20%, transparent);
+    --color-btn-text: #ffffff;
+    --theme-name: "Xanh thép";
+}
+
+/* Theme 13: Lavender (97, 92, 132) */
+[data-theme="lavender"] {
+    --color-primary: #615c84;
+    --color-primary-dark: #423e5c;
+    --color-primary-light: #847ea5;
+    --color-primary-bg: rgba(97, 92, 132, 0.12);
+    --color-bg: #09090c;
+    --color-bg-secondary: #101014;
+    --color-bg-tertiary: #17171d;
+    --color-bg-card: #1c1c24;
+    --color-bg-input: #121216;
+    --color-text: #eeeef4;
+    --color-text-secondary: #b8b5cc;
+    --color-text-tertiary: #787590;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(97, 92, 132, 0.20);
+    --color-navbar-bg: color-mix(in srgb, #615c84 15%, #09090c);
+    --color-navbar-text: #eeeef4;
+    --color-navbar-text-secondary: #b8b5cc;
+    --color-nav-active: color-mix(in srgb, #615c84 20%, transparent);
+    --color-btn-text: #ffffff;
+    --theme-name: "Oải hương";
+}
+
+/* Theme 14: Coral (255, 154, 162) */
+[data-theme="coral"] {
+    --color-primary: #ff9aa2;
+    --color-primary-dark: #e0747e;
+    --color-primary-light: #ffbcc2;
+    --color-primary-bg: rgba(255, 154, 162, 0.12);
+    --color-bg: #0e0809;
+    --color-bg-secondary: #150e10;
+    --color-bg-tertiary: #1d1416;
+    --color-bg-card: #23191c;
+    --color-bg-input: #171012;
+    --color-text: #f5ecee;
+    --color-text-secondary: #dcb0b6;
+    --color-text-tertiary: #9a7078;
+    --color-border: rgba(255, 255, 255, 0.06);
+    --color-border-hover: rgba(255, 255, 255, 0.12);
+    --shadow-glow: 0 0 30px rgba(255, 154, 162, 0.22);
+    --color-navbar-bg: color-mix(in srgb, #ff9aa2 15%, #0e0809);
+    --color-navbar-text: #f5ecee;
+    --color-navbar-text-secondary: #dcb0b6;
+    --color-nav-active: color-mix(in srgb, #ff9aa2 20%, transparent);
+    --color-btn-text: #1a1a2e;
+    --theme-name: "San hô";
+}
+
+/* === Navbar / Sidebar Unified Pastel Backgrounds === */
+/* Landing page nav */
+.nav {
+    background: color-mix(in srgb, var(--color-navbar-bg) 88%, transparent) !important;
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--color-border);
+}
+
+/* Dashboard sidebar */
+.sidebar {
+    background: var(--color-navbar-bg) !important;
+}
+
+/* Dashboard topbar */
+.topbar {
+    background: color-mix(in srgb, var(--color-navbar-bg) 92%, transparent) !important;
+    backdrop-filter: blur(8px);
+}
+
+/* Social page nav */
+.social-page-nav {
+    background: var(--color-navbar-bg) !important;
+}
+
+/* Social sidebar */
+.social-page-sidebar,
+.social-sidebar {
+    background: var(--color-navbar-bg) !important;
+}
+
+/* Social page sidebar tabs */
+.social-page-sidebar .social-tabs,
+.social-sidebar .social-tabs {
+    background: color-mix(in srgb, var(--color-navbar-bg) 95%, transparent) !important;
+}
+
+/* Chat panel header */
+.chat-header {
+    background: color-mix(in srgb, var(--color-navbar-bg) 95%, transparent) !important;
+}
+
+/* Chat input container */
+.chat-input-container {
+    background: color-mix(in srgb, var(--color-navbar-bg) 95%, transparent) !important;
+}
+
+/* Nav link hover effects with pastel primary */
+.nav-links a:hover,
+.sidebar-link:hover {
+    background: var(--color-nav-active) !important;
+    color: var(--color-primary-light) !important;
+}
+
+/* Active nav/sidebar links */
+.sidebar-link.active {
+    background: var(--color-nav-active) !important;
+    color: var(--color-primary-light) !important;
+    border-left: 2px solid var(--color-primary);
+}
+
+.social-tab.active,
+.social-page-sidebar .social-tab.active {
+    color: var(--color-primary) !important;
+    border-bottom-color: var(--color-primary) !important;
+}
+
+/* Navbar text uses pastel-synced colors */
+.nav-links a {
+    color: var(--color-navbar-text-secondary) !important;
+}
+
+.nav-links a:hover {
+    color: var(--color-primary-light) !important;
+}
+
+/* Sidebar text */
+.sidebar-link {
+    color: var(--color-navbar-text-secondary) !important;
+}
+
+.sidebar-link.active {
+    color: var(--color-primary-light) !important;
+}
+
+/* Sidebar section label */
+.sidebar-section-label {
+    color: var(--color-text-tertiary) !important;
+}
+
+/* Sidebar user info */
+.sidebar-user-name {
+    color: var(--color-navbar-text) !important;
+}
+
+.sidebar-user-email {
+    color: var(--color-navbar-text-secondary) !important;
+}
+
+/* Social nav specific */
+.social-page-nav .nav-left a {
+    color: var(--color-navbar-text) !important;
+}
+
+.social-page-nav .nav-left a:hover {
+    color: var(--color-primary) !important;
+}
+
+.social-page-nav .nav-left span {
+    color: var(--color-navbar-text-secondary) !important;
+}
+
+.social-tab {
+    color: var(--color-navbar-text-secondary) !important;
+}
+
+.social-tab:hover {
+    color: var(--color-navbar-text) !important;
+    background: var(--color-nav-active) !important;
+}
+
+/* Button primary text color - auto contrast với từng theme */
+.btn-primary {
+    color: var(--color-btn-text) !important;
+}
+.btn-primary:hover {
+    color: var(--color-btn-text) !important;
+}
+
+/* Landing page nav logo text */
+.nav-logo {
+    color: var(--color-navbar-text) !important;
+}
+
+/* Theme Switcher Button */
+.theme-switcher-btn {
+    position: relative;
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--color-navbar-text-secondary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    background: transparent;
+    border: 1px solid var(--color-border);
+}
+
+.theme-switcher-btn:hover {
+    background: var(--color-nav-active);
+    color: var(--color-navbar-text);
+    border-color: var(--color-border-hover);
+}
+
+.theme-switcher-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+/* === Theme Dropdown Panel === */
+.theme-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-xl);
+    padding: var(--space-6);
+    z-index: 9999;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+    max-width: 420px;
+    width: 90vw;
+    box-shadow: var(--shadow-lg);
+}
+
+.theme-panel.active {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.theme-panel-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    z-index: 9998;
+    opacity: 0;
+    visibility: hidden;
+    transition: all var(--transition-base);
+}
+
+.theme-panel-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.theme-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-5);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.theme-panel-title {
+    font-size: var(--font-size-lg);
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.theme-panel-close {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-md);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    background: transparent;
+    border: none;
+}
+
+.theme-panel-close:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text);
+}
+
+/* === Theme Grid === */
+.theme-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+}
+
+.theme-option {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    border: 2px solid transparent;
+    background: var(--color-bg-tertiary);
+}
+
+.theme-option:hover {
+    border-color: var(--color-border-hover);
+    transform: translateY(-2px);
+}
+
+.theme-option.active {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 12px var(--shadow-glow);
+}
+
+.theme-swatch {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.theme-label {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    text-align: center;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+/* Pastel swatch colors - 14 themes */
+.theme-swatch-blue { background: linear-gradient(135deg, #7ab5f0, #4a8fd4); }
+.theme-swatch-darkgreen { background: linear-gradient(135deg, #7ecf7a, #4a9e46); }
+.theme-swatch-yellowgreen { background: linear-gradient(135deg, #c5d975, #8fa535); }
+.theme-swatch-lightgreen { background: linear-gradient(135deg, #d4e6a0, #9cb86a); }
+.theme-swatch-olive { background: linear-gradient(135deg, #a8c48a, #6a804f); }
+.theme-swatch-black { background: linear-gradient(135deg, #2a2a2a, #000000); }
+.theme-swatch-white { background: linear-gradient(135deg, #e8e8f0, #ffffff); border-color: #ccc; }
+.theme-swatch-skyblue { background: linear-gradient(135deg, #b8e1ff, #8ec6f0); }
+.theme-swatch-rose { background: linear-gradient(135deg, #e98d9e, #d46a7e); }
+.theme-swatch-blush { background: linear-gradient(135deg, #ffdce3, #f0b8c4); }
+.theme-swatch-beige { background: linear-gradient(135deg, #eedcce, #d4c0ae); }
+.theme-swatch-steelblue { background: linear-gradient(135deg, #5883ad, #3d5f80); }
+.theme-swatch-lavender { background: linear-gradient(135deg, #615c84, #423e5c); }
+.theme-swatch-coral { background: linear-gradient(135deg, #ff9aa2, #e0747e); }
+
+/* === Smooth theme transitions === */
+html[data-theme] {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+html[data-theme] .nav,
+html[data-theme] .sidebar,
+html[data-theme] .topbar,
+html[data-theme] .social-page-nav,
+html[data-theme] .social-page-sidebar,
+html[data-theme] .social-sidebar,
+html[data-theme] .chat-header,
+html[data-theme] .chat-input-container,
+html[data-theme] .sidebar-link,
+html[data-theme] .social-tab {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+/* === Responsive === */
+@media (max-width: 480px) {
+    .theme-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}

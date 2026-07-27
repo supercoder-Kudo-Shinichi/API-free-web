@@ -3,18 +3,23 @@
  */
 const Utils = {
     /**
-     * Format a date string to human-readable format.
+     * Format a date string to GMT+7 (Asia/Bangkok) timezone (24h format).
      */
     formatDate(dateString) {
         if (!dateString) return 'N/A';
         const date = new Date(dateString);
-        return date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-            hour: '2-digit',
-            minute: '2-digit',
-        });
+        // Convert to GMT+7 manually for reliable 24h display
+        const utcMs = date.getTime();
+        const gmt7Ms = utcMs + (7 * 60 * 60 * 1000);
+        const gmt7 = new Date(gmt7Ms);
+        
+        const year = gmt7.getUTCFullYear();
+        const month = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][gmt7.getUTCMonth()];
+        const day = String(gmt7.getUTCDate()).padStart(2, '0');
+        const hour = String(gmt7.getUTCHours()).padStart(2, '0');
+        const minute = String(gmt7.getUTCMinutes()).padStart(2, '0');
+        
+        return `${month} ${day}, ${year}, ${hour}:${minute}`;
     },
 
     /**

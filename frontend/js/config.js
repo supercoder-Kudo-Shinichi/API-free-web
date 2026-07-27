@@ -61,11 +61,12 @@ const CONFIG = {
         WEBSITES: '/api/websites',
         PACKAGE_USAGE: '/api/package/usage',
         ADMIN_PACKAGE_USAGE: '/api/admin/package-usage',
+        THEME: '/api/auth/theme',
     },
 
     APP: {
-        NAME: 'AuthGuard',
-        TAGLINE: 'Enterprise Authentication Made Simple',
+        NAME: 'Chuột Chat',
+        TAGLINE: 'Real-time Messaging Platform',
     },
 
     GOOGLE: {
@@ -85,5 +86,25 @@ const CONFIG = {
         PENDING_REQUESTS: '/api/admin/pending-requests',
         APPROVE: '/api/admin/approve',
         REJECT: '/api/admin/reject',
+    },
+
+    SOCIAL: {
+        SEARCH: '/api/users/search',
+        FRIEND_REQUEST: '/api/friends/request',
+        FRIEND_ACCEPT: '/api/friends/accept',
+        FRIEND_DECLINE: '/api/friends/decline',
+        FRIEND_CANCEL: '/api/friends/request',
+        FRIEND_REMOVE: '/api/friends/remove',
+        FRIENDS: '/api/friends',
+        PENDING_REQUESTS: '/api/friends/pending',
+        CONVERSATIONS: '/api/conversations',
+        MESSAGES: '/api/messages',
+        MARK_READ: '/api/messages/read',
+        UPLOAD: '/api/upload',
+    },
+
+    SOCKET: {
+        URL: resolveDefaultApiBaseUrl(),
+        PATH: '/socket.io',
     }
 };

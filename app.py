@@ -4,9 +4,15 @@ from config import Config
 from models import db
 from routes import auth_bp
 from routes_payment import payment_bp
+from routes_social import social_bp
 from middleware import add_cors_headers, log_audit_event
 from services.user_service import UserService
 from models import User
+from flask_socketio import SocketIO
+from socketio_events import register_socketio_events
+
+# Use threading for Windows compatibility
+socketio = SocketIO(cors_allowed_origins="*", async_mode='threading')
 
 def create_app(config_class=Config, test_config=None):
     # Get the absolute path to the frontend directory
@@ -31,10 +37,15 @@ def create_app(config_class=Config, test_config=None):
 
     # Initialize extensions
     db.init_app(app)
+    socketio.init_app(app)
 
     # Register blueprints
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(payment_bp, url_prefix='/api')
+    app.register_blueprint(social_bp, url_prefix='/api')
+
+    # Register SocketIO events
+    register_socketio_events(socketio)
 
     # Apply CORS headers after every request
     @app.after_request
@@ -53,7 +64,7 @@ def create_app(config_class=Config, test_config=None):
         if os.path.isfile(file_path):
             return send_from_directory(frontend_dir, path)
         # For frontend routes that aren't files, redirect to login.html
-        if path in ['login', 'register', 'dashboard', 'docs', 'admin']:
+        if path in ['login', 'register', 'dashboard', 'docs', 'admin', 'social']:
             return send_from_directory(frontend_dir, f'{path}.html')
         return send_from_directory(frontend_dir, 'index.html')
 
@@ -85,6 +96,17 @@ def create_app(config_class=Config, test_config=None):
     # Create tables
     with app.app_context():
         db.create_all()
+        # Migration: add theme_preference column if not exists (for existing databases)
+        try:
+            from sqlalchemy import inspect
+            inspector = inspect(db.engine)
+            columns = [c['name'] for c in inspector.get_columns('users')]
+            if 'theme_preference' not in columns:
+                db.session.execute(db.text('ALTER TABLE users ADD COLUMN theme_preference VARCHAR(20) DEFAULT NULL'))
+                db.session.commit()
+                print("[MIGRATION] Added theme_preference column to users table")
+        except Exception as e:
+            print(f"[MIGRATION] Note: {e}")
 
     return app
 
@@ -92,5 +114,5 @@ def create_app(config_class=Config, test_config=None):
 app = create_app()
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=Config.PORT)
+    socketio.run(app, host='0.0.0.0', port=Config.PORT, allow_unsafe_werkzeug=True)
 

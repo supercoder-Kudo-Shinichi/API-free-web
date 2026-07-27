@@ -57,10 +57,17 @@ const ApiClient = {
      */
     async _request(endpoint, options = {}) {
         const url = this._url(endpoint);
-        const headers = {
+        
+        // For FormData, don't set Content-Type (browser sets multipart boundary)
+        const isFormData = options.isFormData || (options.body instanceof FormData);
+        const headers = isFormData ? {} : {
             'Content-Type': 'application/json',
-            ...options.headers,
         };
+        
+        // Merge additional headers
+        if (options.headers) {
+            Object.assign(headers, options.headers);
+        }
 
         // Attach access token if available
         if (this._accessToken) {
@@ -82,7 +89,7 @@ const ApiClient = {
         }
 
         if (options.body) {
-            fetchOptions.body = JSON.stringify(options.body);
+            fetchOptions.body = isFormData ? options.body : JSON.stringify(options.body);
         }
 
         let response;
@@ -167,6 +174,17 @@ const ApiClient = {
     },
 
     post(endpoint, body = {}, headers = {}) {
+        // If FormData, don't set Content-Type (browser sets it for multipart)
+        if (body instanceof FormData) {
+            const fetchHeaders = { ...headers };
+            // Remove Content-Type so browser sets it with boundary
+            return this._request(endpoint, { 
+                method: 'POST', 
+                body, 
+                headers: fetchHeaders,
+                isFormData: true 
+            });
+        }
         return this._request(endpoint, { method: 'POST', body, headers });
     },
 

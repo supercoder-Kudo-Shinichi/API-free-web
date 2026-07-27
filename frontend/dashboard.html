@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard - AuthGuard</title>
+    <title>Dashboard - Chuột Chat</title>
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/themes.css">
     <style>
         .admin-badge { background: #fef3c7; color: #92400e; font-size: 10px; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
         .proof-image { max-width: 200px; max-height: 150px; border-radius: 6px; cursor: pointer; border: 1px solid var(--color-border); }
@@ -31,24 +32,19 @@
 
     <aside class="sidebar" id="sidebar" role="navigation" aria-label="Dashboard navigation">
         <div class="sidebar-header">
-            <a href="index.html" class="sidebar-logo">
-                <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
-                <span>AuthGuard</span>
+            <a href="index.html" class="sidebar-logo" title="Home">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
             </a>
         </div>
         <nav class="sidebar-nav">
             <div class="sidebar-section-label">Main</div>
             <a href="#" class="sidebar-link active" data-section="overview" onclick="switchSection('overview')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
                 Overview
             </a>
-            <a href="#" class="sidebar-link" data-section="api-keys" onclick="switchSection('api-keys')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
-                API Keys
-            </a>
-            <a href="#" class="sidebar-link" data-section="websites" onclick="switchSection('websites')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
-                Websites
+            <a href="social.html" class="sidebar-link">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                Social
             </a>
             <a href="#" class="sidebar-link" data-section="transactions" onclick="switchSection('transactions')">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2" ry="2"/><line x1="12" y1="4" x2="12" y2="20"/><line x1="2" y1="12" x2="22" y2="12"/></svg>
@@ -75,10 +71,6 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 Profile
             </a>
-            <a href="#" class="sidebar-link" data-section="security" onclick="switchSection('security')">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-                Security
-            </a>
             <a href="docs.html" class="sidebar-link">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
                 Documentation
@@ -86,7 +78,9 @@
         </nav>
         <div class="sidebar-footer">
             <div class="sidebar-user" onclick="switchSection('profile')">
-                <div class="sidebar-avatar" id="sidebar-avatar">U</div>
+                <div class="sidebar-avatar" id="sidebar-avatar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="20" height="20"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                </div>
                 <div class="sidebar-user-info">
                     <div class="sidebar-user-name" id="sidebar-name">User</div>
                     <div class="sidebar-user-email" id="sidebar-email">user@gmail.com</div>
@@ -128,40 +122,49 @@
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header">
-                            <div class="stat-card-icon warning"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div>
-                        </div>
-                        <div class="stat-card-value" id="stat-keys">0</div>
-                        <div class="stat-card-label">API Keys</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-card-header">
                             <div class="stat-card-icon info"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></div>
                         </div>
-                        <div class="stat-card-value" id="stat-websites">0</div>
-                        <div class="stat-card-label">Websites</div>
+                        <div class="stat-card-value" id="stat-transactions">0</div>
+                        <div class="stat-card-label">Transactions</div>
                     </div>
                 </div>
-                <div class="section-card" style="margin-top: var(--space-4);">
-                    <div class="section-card-header"><span class="section-card-title">Package Quota</span></div>
-                    <div class="section-card-body" id="quota-summary-card">
-                        <div class="empty-state"><div class="empty-state-title">Loading quota…</div></div>
+
+                <!-- Package Quota -->
+                <div class="page-header" style="margin-top: var(--space-6);"><h2>Package Quota</h2></div>
+                <div id="package-quota-loading" style="padding: var(--space-4); text-align: center; color: var(--color-text-secondary);">Loading package info...</div>
+                <div id="package-quota-content" style="display:none;">
+                    <div class="section-card" style="margin-bottom: var(--space-4);">
+                        <div class="section-card-body">
+                            <div style="display: flex; align-items: center; gap: var(--space-3); margin-bottom: var(--space-4);">
+                                <span id="package-badge" class="badge badge-info" style="font-size: var(--font-size-sm); padding: var(--space-1) var(--space-3);"></span>
+                                <span style="font-size: var(--font-size-sm); color: var(--color-text-secondary);">
+                                    <a href="purchase.html" style="color: var(--color-primary); text-decoration: underline;">Nâng cấp gói</a>
+                                </span>
+                            </div>
+                            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+                                <div class="stat-card" style="padding: var(--space-3);">
+                                    <div class="stat-card-label" style="font-size: var(--font-size-xs);">👥 Friends</div>
+                                    <div class="stat-card-value" id="quota-friends" style="font-size: var(--font-size-lg);">0</div>
+                                </div>
+                                <div class="stat-card" style="padding: var(--space-3);">
+                                    <div class="stat-card-label" style="font-size: var(--font-size-xs);">💬 Messages Today</div>
+                                    <div class="stat-card-value" id="quota-messages" style="font-size: var(--font-size-lg);">0</div>
+                                </div>
+                                <div class="stat-card" style="padding: var(--space-3);">
+                                    <div class="stat-card-label" style="font-size: var(--font-size-xs);">📁 Conversations</div>
+                                    <div class="stat-card-value" id="quota-conversations" style="font-size: var(--font-size-lg);">0</div>
+                                </div>
+                                <div class="stat-card" style="padding: var(--space-3);">
+                                    <div class="stat-card-label" style="font-size: var(--font-size-xs);">🖼 Images Storage</div>
+                                    <div class="stat-card-value" id="quota-image-storage" style="font-size: var(--font-size-lg);">0 MB</div>
+                                </div>
+                                <div class="stat-card" style="padding: var(--space-3);">
+                                    <div class="stat-card-label" style="font-size: var(--font-size-xs);">📄 Files Storage</div>
+                                    <div class="stat-card-value" id="quota-file-storage" style="font-size: var(--font-size-lg);">0 MB</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
-
-            <div id="section-api-keys" class="dashboard-section" style="display:none;">
-                <div class="page-header"><h2>API Keys</h2><button class="btn btn-primary btn-sm" onclick="createApiKey()">+ Create API Key</button></div>
-                <div class="section-card">
-                    <div class="section-card-header"><span class="section-card-title">Your API Keys</span></div>
-                    <div class="section-card-body"><div id="api-keys-list"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="empty-state-title">No API Keys</div><div class="empty-state-text">Create your first API key to start integrating.</div></div></div></div>
-                </div>
-            </div>
-
-            <div id="section-websites" class="dashboard-section" style="display:none;">
-                <div class="page-header"><h2>Websites</h2><button class="btn btn-primary btn-sm" onclick="showAddWebsiteModal()">+ Add Website</button></div>
-                <div class="section-card">
-                    <div class="section-card-header"><span class="section-card-title">Connected Websites</span></div>
-                    <div class="section-card-body"><div id="websites-list"><div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="empty-state-title">No Websites Connected</div><div class="empty-state-text">Add your first website to start using AuthGuard.</div></div></div></div>
                 </div>
             </div>
 
@@ -195,11 +198,7 @@
                         </form>
                     </div>
                 </div>
-            </div>
-
-            <div id="section-security" class="dashboard-section" style="display:none;">
-                <div class="page-header"><h2>Security</h2></div>
-                <div class="section-card">
+                <div class="section-card" style="margin-top: var(--space-4);">
                     <div class="section-card-header"><span class="section-card-title">Change Password</span></div>
                     <div class="section-card-body">
                         <form id="password-form" onsubmit="changePassword(event)">
@@ -245,14 +244,12 @@
         <img id="fullscreen-image" src="" alt="Payment Proof">
     </div>
 
+    <script src="js/themes.js"></script>
     <script src="js/config.js"></script>
     <script src="js/utils.js"></script>
     <script src="js/api.js"></script>
     <script src="js/auth.js"></script>
     <script>
-        let apiKeys = [];
-        let websites = [];
-
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('open');
             document.getElementById('sidebar-overlay').classList.toggle('active');
@@ -266,9 +263,10 @@
             const el = document.getElementById('section-' + section);
             if (el) el.style.display = 'block';
             const titles = {
-                overview: 'Overview', 'api-keys': 'API Keys', websites: 'Websites',
+                overview: 'Overview',
+                social: 'Social',
                 transactions: 'Lịch sử giao dịch',
-                profile: 'Profile', security: 'Security',
+                profile: 'Profile',
                 'admin-pending': 'Pending Requests', 'admin-users': 'Users'
             };
             document.getElementById('page-title').textContent = titles[section] || 'Overview';
@@ -278,139 +276,7 @@
             if (window.innerWidth <= 768) toggleSidebar();
         }
 
-        async function createApiKey() {
-            const name = window.prompt('Name your API key', 'Integration Key');
-            if (!name) return;
-            try {
-                const data = await ApiClient.post(CONFIG.ENDPOINTS.KEYS, { name });
-                if (!data.success) throw data;
-                await loadApiKeys();
-                if (data.key) {
-                    navigator.clipboard?.writeText(data.key).catch(() => {});
-                    Utils.showToast('New API key created and copied to clipboard.', 'success');
-                    alert('New API key: ' + data.key);
-                } else {
-                    Utils.showToast('API key created.', 'success');
-                }
-            } catch (err) {
-                Utils.showToast(err.message || 'Failed to create API key.', 'error');
-            }
-        }
-
-        async function revokeApiKey(keyId) {
-            if (!confirm('Revoke this API key? This action cannot be undone.')) return;
-            try {
-                const data = await ApiClient.delete(CONFIG.ENDPOINTS.KEYS + '/' + keyId);
-                if (data.success) {
-                    Utils.showToast('API key revoked successfully.', 'info');
-                    await loadApiKeys();
-                } else {
-                    Utils.showToast(data.message || 'Failed to revoke key.', 'error');
-                }
-            } catch (err) {
-                Utils.showToast(err.message || 'Error revoking key.', 'error');
-            }
-        }
-
-        function renderApiKeys() {
-            const c = document.getElementById('api-keys-list');
-            if (!apiKeys.length) {
-                c.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 11-7.778 7.778 5.5 5.5 0 017.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg></div><div class="empty-state-title">No API Keys</div><div class="empty-state-text">Create your first API key.</div>';
-                document.getElementById('stat-keys').textContent = '0';
-                return;
-            }
-            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>Key</th><th>Last Used</th><th>Created</th><th>Status</th><th>Actions</th></tr></thead><tbody>' +
-                apiKeys.map(k => {
-                    const isActive = !k.revoked;
-                    const statusBadge = isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-rejected">Revoked</span>';
-                    const lastUsed = k.last_used_at ? Utils.formatDate(k.last_used_at) : '<span style="color:var(--color-text-tertiary);font-size:var(--font-size-xs)">Never</span>';
-                    const actions = isActive ? `<button class="btn btn-danger btn-sm" onclick="revokeApiKey('${k.id}')" style="font-size:11px;padding:2px 8px;">Revoke</button>` : '<span style="color:var(--color-text-tertiary);font-size:var(--font-size-xs)">—</span>';
-                    return '<tr>' +
-                        '<td>' + k.name + '</td>' +
-                        '<td><code style="font-family:var(--font-mono);font-size:var(--font-size-xs);color:var(--color-text-tertiary);">' + (k.preview || '••••••••') + '</code></td>' +
-                        '<td style="font-size:var(--font-size-xs)">' + lastUsed + '</td>' +
-                        '<td>' + Utils.formatDate(k.created_at) + '</td>' +
-                        '<td>' + statusBadge + '</td>' +
-                        '<td>' + actions + '</td>' +
-                    '</tr>';
-                }).join('') +
-                '</tbody></table></div>';
-            document.getElementById('stat-keys').textContent = apiKeys.length;
-        }
-
-        async function loadApiKeys() {
-            try {
-                const data = await ApiClient.get(CONFIG.ENDPOINTS.KEYS);
-                if (!data.success) throw data;
-                apiKeys = data.keys || [];
-                renderApiKeys();
-            } catch (err) {
-                Utils.showToast(err.message || 'Failed to load API keys.', 'error');
-            }
-        }
-
-        async function showAddWebsiteModal() {
-            const name = window.prompt('Website name', 'My App');
-            const domain = window.prompt('Website domain', 'https://example.com');
-            if (!domain) return;
-            try {
-                const data = await ApiClient.post(CONFIG.ENDPOINTS.WEBSITES, { name: name || domain, domain });
-                if (!data.success) throw data;
-                await loadWebsites();
-                Utils.showToast('Website connected.', 'success');
-            } catch (err) {
-                Utils.showToast(err.message || 'Failed to connect website.', 'error');
-            }
-        }
-
-        async function loadWebsites() {
-            try {
-                const data = await ApiClient.get(CONFIG.ENDPOINTS.WEBSITES);
-                if (!data.success) throw data;
-                websites = data.websites || [];
-                renderWebsites();
-            } catch (err) {
-                Utils.showToast(err.message || 'Failed to load websites.', 'error');
-            }
-        }
-
-        function renderWebsites() {
-            const c = document.getElementById('websites-list');
-            if (!websites.length) {
-                c.innerHTML = '<div class="empty-state"><div class="empty-state-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg></div><div class="empty-state-title">No Websites</div><div class="empty-state-text">Add your first website.</div>';
-                document.getElementById('stat-websites').textContent = '0';
-                return;
-            }
-            c.innerHTML = '<div class="table-container"><table><thead><tr><th>Name</th><th>URL</th><th>Redirect URL</th><th>Status</th></tr></thead><tbody>' +
-                websites.map(w => {
-                    const isActive = w.active !== false;
-                    const statusBadge = isActive ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-rejected">Inactive</span>';
-                    const redirectHtml = w.redirect_url ? '<code style="font-size:var(--font-size-xs);">' + Utils.escapeHtml(w.redirect_url) + '</code>' : '<span style="color:var(--color-text-tertiary);font-size:var(--font-size-xs)">—</span>';
-                    return '<tr><td>' + Utils.escapeHtml(w.name) + '</td><td><code style="font-size:var(--font-size-xs);">' + Utils.escapeHtml(w.domain) + '</code></td><td style="font-size:var(--font-size-xs)">' + redirectHtml + '</td><td>' + statusBadge + '</td></tr>';
-                }).join('') +
-                '</tbody></table></div>';
-            document.getElementById('stat-websites').textContent = websites.length;
-        }
-
         function closeModal(id) { document.getElementById(id).classList.remove('active'); }
-
-        async function loadQuotaSummary() {
-            try {
-                const data = await ApiClient.get(CONFIG.ENDPOINTS.PACKAGE_USAGE);
-                if (!data.success) throw data;
-                const pkg = data.package || {};
-                const card = document.getElementById('quota-summary-card');
-                card.innerHTML = `
-                    <div style="display:grid; gap: var(--space-3);">
-                        <div><strong>Current package:</strong> <span class="badge badge-info">${pkg.package || 'free'}</span></div>
-                        <div><strong>Used:</strong> ${pkg.used ?? 0} / ${pkg.limit ?? '∞'}</div>
-                        <div><strong>Remaining:</strong> ${pkg.remaining ?? 'Unlimited'}</div>
-                        <div><strong>Features:</strong> ${Object.entries(pkg.features || {}).filter(([, enabled]) => enabled).map(([name]) => name.replace(/_/g, ' ')).join(', ') || 'Basic access'}</div>
-                    </div>`;
-            } catch (err) {
-                document.getElementById('quota-summary-card').innerHTML = '<div class="empty-state"><div class="empty-state-title">Unable to load quota</div></div>';
-            }
-        }
 
         async function updateProfile(e) {
             e.preventDefault();
@@ -584,10 +450,53 @@
                 // Hien thi thong tin user
                 document.getElementById('sidebar-name').textContent = user.displayName || user.username;
                 document.getElementById('sidebar-email').textContent = user.email;
-                document.getElementById('sidebar-avatar').textContent = (user.displayName || user.username || 'U')[0].toUpperCase();
+                // Sidebar avatar always shows gear icon (set in HTML)
                 document.getElementById('profile-username').value = user.username || '';
                 document.getElementById('profile-display-name').value = user.displayName || '';
                 document.getElementById('profile-email').value = user.email || '';
+
+                // Hien thi package badge
+                var packageName = user.package || 'free';
+                var badge = document.getElementById('package-badge');
+                if (badge) {
+                    badge.textContent = packageName.charAt(0).toUpperCase() + packageName.slice(1);
+                    badge.className = 'badge ' + (packageName === 'free' ? 'badge-info' : 'badge-success');
+                }
+
+                // Load package quota
+                try {
+                    console.log('[Quota] Loading...');
+                    var quotaData = await ApiClient.get('/api/package/limits');
+                    console.log('[Quota] Response:', JSON.stringify(quotaData));
+                    if (quotaData.success) {
+                        document.getElementById('package-quota-loading').style.display = 'none';
+                        document.getElementById('package-quota-content').style.display = 'block';
+                        
+                        var limits = quotaData.limits || {};
+                        var usage = quotaData.usage || {};
+                        
+                        var UNLIMITED = 999999999;
+                        function fmt(val) { return val >= UNLIMITED ? '∞' : val.toLocaleString(); }
+                        
+                        document.getElementById('quota-friends').textContent = (usage.friends || 0) + ' / ' + fmt(limits.max_friends);
+                        document.getElementById('quota-messages').textContent = (usage.messages_today || 0) + ' / ' + fmt(limits.max_messages_per_day);
+                        document.getElementById('quota-conversations').textContent = (usage.conversations || 0) + ' / ' + fmt(limits.max_conversations);
+                        
+                        var imgMb = ((usage.image_storage || 0) / (1024 * 1024)).toFixed(1);
+                        var fileMb = ((usage.file_storage || 0) / (1024 * 1024)).toFixed(1);
+                        var imgLimit = limits.max_image_size_mb >= UNLIMITED ? '∞' : limits.max_image_size_mb + ' MB';
+                        var fileLimit = limits.max_file_size_mb >= UNLIMITED ? '∞' : limits.max_file_size_mb + ' MB';
+                        
+                        document.getElementById('quota-image-storage').textContent = imgMb + ' MB / ' + imgLimit;
+                        document.getElementById('quota-file-storage').textContent = fileMb + ' MB / ' + fileLimit;
+                        console.log('[Quota] Displayed successfully');
+                    } else {
+                        console.log('[Quota] API returned success=false');
+                    }
+                } catch (e) {
+                    console.log('[Quota] Error:', e);
+                    document.getElementById('package-quota-loading').textContent = 'Không thể tải thông tin hạn mức.';
+                }
 
                 // KIEM TRA ADMIN: neu role=admin thi hien 2 nut dac biet
                 console.log('User role:', user.role);
@@ -596,11 +505,6 @@
                     loadAdminPending();
                     loadAdminUsers();
                 }
-
-                await loadQuotaSummary();
-                await loadApiKeys();
-                await loadWebsites();
-
             } catch (err) {
                 try {
                     var refreshData = await ApiClient.post(CONFIG.ENDPOINTS.REFRESH, {}, {});

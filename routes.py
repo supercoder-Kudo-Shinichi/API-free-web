@@ -511,3 +511,34 @@ def change_password():
     except Exception as e:
         log_audit_event('CHANGE_PASSWORD', 'FAILED', user_id, details={"error": str(e)})
         return jsonify(build_error_response("CHANGE_PASSWORD_FAILED", str(e))), 500
+
+# 15. Theme Preference
+@auth_bp.route('/theme', methods=['GET', 'PUT'])
+@require_auth
+def handle_theme():
+    user_id = g.user.get('userId')
+    user = UserService.find_by_id(user_id)
+    if not user:
+        return jsonify(build_error_response("USER_NOT_FOUND", "User not found.")), 404
+
+    if request.method == 'GET':
+        return jsonify(build_success_response(
+            message="Theme preference loaded.",
+            theme=user.theme_preference or 'white'
+        )), 200
+
+    if request.method == 'PUT':
+        data = request.get_json() or {}
+        theme = data.get('theme', '').strip()
+        valid_themes = ['blue', 'darkgreen', 'yellowgreen', 'lightgreen', 'olive', 'black', 'white', 'skyblue', 'rose', 'blush', 'beige', 'steelblue', 'lavender', 'coral']
+        if theme not in valid_themes:
+            return jsonify(build_error_response("INVALID_THEME", f"Invalid theme. Valid: {', '.join(valid_themes)}")), 400
+
+        user.theme_preference = theme
+        db.session.commit()
+        UserService.sync_account_backup(user)
+        
+        return jsonify(build_success_response(
+            message="Theme preference saved.",
+            theme=theme
+        )), 200

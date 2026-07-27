@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Account - AuthGuard</title>
+    <title>Create Account - Chat chít</title>
     <meta name="description" content="Create your AuthGuard account.">
     <link rel="stylesheet" href="css/base.css">
     <link rel="stylesheet" href="css/components.css">
     <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/themes.css">
 </head>
 <body>
     <div class="auth-page">
@@ -16,10 +17,10 @@
             <div class="auth-header">
                 <a href="index.html" class="auth-logo">
                     <img src="css/img/authss.png" alt="AuthGuard" class="logo-img-sm">
-                    <span>AuthGuard</span>
+                    <span>Chat chít</span>
                 </a>
                 <h1 class="auth-title">Create your account</h1>
-                <p class="auth-subtitle">Start building with AuthGuard for free.</p>
+                <p class="auth-subtitle">Start chating free.</p>
             </div>
 
             <div class="auth-card">
@@ -151,7 +152,7 @@
                 const data = await Auth.googleLogin(response.credential);
                 if (data.success) {
                     Utils.showToast('Account created with Google! Redirecting...', 'success');
-                    setTimeout(() => { window.location.href = 'dashboard.html'; }, 1000);
+                    setTimeout(() => { window.location.href = 'index.html'; }, 1000);
                 }
             } catch (err) {
                 btn.innerHTML = originalContent;
@@ -200,7 +201,7 @@
                 if (data.success) {
                     Utils.showToast('Account created! Welcome to AuthGuard.', 'success');
                     setTimeout(() => {
-                        window.location.href = 'dashboard.html';
+                        window.location.href = 'index.html';
                     }, 1000);
                 }
             } catch (err) {
@@ -214,11 +215,12 @@
 
         Auth.init().then(authenticated => {
             if (authenticated) {
-                window.location.href = 'dashboard.html';
+                window.location.href = 'index.html';
                 return;
             }
             initGoogleSignUp();
         });
     </script>
+    <script src="js/themes.js"></script>
 </body>
 </html>

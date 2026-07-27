@@ -70,6 +70,7 @@ class User(db.Model):
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     package = db.Column(db.String(50), nullable=False, default='free')
     package_activated_at = db.Column(db.DateTime, nullable=True)
+    theme_preference = db.Column(db.String(20), nullable=True, default=None)
 
     sessions = db.relationship('Session', backref='user', cascade='all, delete-orphan', lazy=True)
     audit_logs = db.relationship('AuditLog', backref='user', cascade='all, delete-orphan', lazy=True)
@@ -89,7 +90,8 @@ class User(db.Model):
             "role": self.role,
             "created_at": self.created_at.isoformat(),
             "package": self.package,
-            "package_activated_at": self.package_activated_at.isoformat() if self.package_activated_at else None
+            "package_activated_at": self.package_activated_at.isoformat() if self.package_activated_at else None,
+            "theme_preference": self.theme_preference
         }
 
 class Session(db.Model):
@@ -145,3 +147,146 @@ class Transaction(db.Model):
     payment_method = db.Column(db.String(20), nullable=False, default='manual')
     approved_by = db.Column(db.String(36), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# ============================================================
+# SOCIAL FEATURES - Friend Request
+# ============================================================
+class FriendRequest(db.Model):
+    __tablename__ = 'friend_requests'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    sender_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    receiver_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    status = db.Column(db.String(20), nullable=False, default='PENDING')  # PENDING, ACCEPTED, DECLINED, CANCELLED
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('sender_id', 'receiver_id', name='uq_friend_request'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'sender_id': self.sender_id,
+            'receiver_id': self.receiver_id,
+            'status': self.status,
+            'created_at': self.created_at.isoformat(),
+            'updated_at': self.updated_at.isoformat(),
+        }
+
+
+# ============================================================
+# SOCIAL FEATURES - Friend
+# ============================================================
+class Friend(db.Model):
+    __tablename__ = 'friends'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    friend_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        db.UniqueConstraint('user_id', 'friend_id', name='uq_friend'),
+    )
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'friend_id': self.friend_id,
+            'created_at': self.created_at.isoformat(),
+        }
+
+
+# ============================================================
+# SOCIAL FEATURES - Conversation
+# ============================================================
+class Conversation(db.Model):
+    __tablename__ = 'conversations'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    members = db.relationship('ConversationMember', backref='conversation', cascade='all, delete-orphan', lazy=True)
+    messages = db.relationship('Message', backref='conversation', cascade='all, delete-orphan', lazy=True)
+
+    def to_dict(self, current_user_id=None):
+        data = {
+            'id': self.id,
+            'created_at': self.created_at.isoformat() + 'Z',
+            'updated_at': self.updated_at.isoformat() + 'Z',
+        }
+        if current_user_id and self.members:
+            other = [m for m in self.members if m.user_id != current_user_id]
+            if other:
+                data['other_user'] = other[0].user.to_dict() if other[0].user else None
+        return data
+
+
+class ConversationMember(db.Model):
+    __tablename__ = 'conversation_members'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    conversation_id = db.Column(db.String(36), db.ForeignKey('conversations.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    joined_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    user = db.relationship('User', backref='conversation_memberships', lazy=True)
+
+    __table_args__ = (
+        db.UniqueConstraint('conversation_id', 'user_id', name='uq_conversation_member'),
+    )
+
+
+# ============================================================
+# SOCIAL FEATURES - Message
+# ============================================================
+class Message(db.Model):
+    __tablename__ = 'messages'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    conversation_id = db.Column(db.String(36), db.ForeignKey('conversations.id', ondelete='CASCADE'), nullable=False, index=True)
+    sender_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    content = db.Column(db.Text, nullable=False)
+    message_type = db.Column(db.String(20), nullable=False, default='text')  # text, image, file
+    file_size = db.Column(db.Integer, nullable=True, default=None)  # bytes, for image/file messages
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+    sender = db.relationship('User', backref='messages', lazy=True)
+    reads = db.relationship('MessageRead', backref='message', cascade='all, delete-orphan', lazy=True)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'conversation_id': self.conversation_id,
+            'sender_id': self.sender_id,
+            'content': self.content,
+            'message_type': self.message_type,
+            'file_size': self.file_size,
+            'created_at': self.created_at.isoformat() + 'Z',
+            'updated_at': self.updated_at.isoformat() + 'Z',
+            'sender': self.sender.to_dict() if self.sender else None,
+            'reads': [r.to_dict() for r in self.reads] if self.reads else [],
+        }
+
+
+class MessageRead(db.Model):
+    __tablename__ = 'message_reads'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    message_id = db.Column(db.String(36), db.ForeignKey('messages.id', ondelete='CASCADE'), nullable=False, index=True)
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False, index=True)
+    read_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'message_id': self.message_id,
+            'user_id': self.user_id,
+            'read_at': self.read_at.isoformat(),
+        }
